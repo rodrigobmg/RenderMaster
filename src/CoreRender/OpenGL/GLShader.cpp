@@ -54,18 +54,9 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		if (referenced == 0)
 			continue;
 
-		//// create buffer
-		//buffer.data = NULL;
-		//buffer.size = size >> 2;
-		//buffer.begin = 0;
-		//buffer.end = size >> 2;
-		//buffer.ubo_id = 0;
-		//buffer.name = name;
-		//buffer.parameters.clear();
+		vector<UBO::UBOParameter> paramsUBO;
 
-		vector<UBO::UBOParameter> params;
-
-		// buffer parameters
+		// UBO parameters
 		for (int j = 0; j < numIndices; j++)
 		{
 			GLuint index = (GLuint)indicesArray[j];
@@ -119,12 +110,12 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			p.offset = offsetVariable;
 			p.elements = elementsNum;
 
-			params.push_back(p);
+			paramsUBO.push_back(p);
 		}
 
 		// sort by offset for pretty view
 		#ifdef _DEBUG
-			std::sort(params.begin(), params.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
+			std::sort(paramsUBO.begin(), paramsUBO.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
 			{ 
 				return a.offset < b.offset; 
 			});
@@ -143,15 +134,15 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 				if (allUBO[j].bytes != bytesUBO)
 					isEqual = false;
 
-				if (allUBO[j].parameters.size() != params.size())
+				if (allUBO[j].parameters.size() != paramsUBO.size())
 					isEqual = false;
 
-				for (int k = 0; isEqual && k < params.size(); k++)
+				for (int k = 0; isEqual && k < paramsUBO.size(); k++)
 				{
-					if (allUBO[j].parameters[k].name != params[k].name ||
-						allUBO[j].parameters[k].bytes != params[k].bytes ||
-						allUBO[j].parameters[k].offset != params[k].offset ||
-						allUBO[j].parameters[k].elements != params[k].elements)
+					if (allUBO[j].parameters[k].name != paramsUBO[k].name ||
+						allUBO[j].parameters[k].bytes != paramsUBO[k].bytes ||
+						allUBO[j].parameters[k].offset != paramsUBO[k].offset ||
+						allUBO[j].parameters[k].elements != paramsUBO[k].elements)
 					{
 						isEqual = 0;
 					}
@@ -172,49 +163,19 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, params)));
-		}
+			for (int i = 0; i < paramsUBO.size(); i++)
+			{
+				_parameters[paramsUBO[i].name] = {(uint)allUBO.size(), (uint)i};
+			}
 
-		
-
-
-		//// create buffer
-		//if (index == -1)
-		//{
-		//	index = buffers.size();
-		//	buffer.data = new int[buffer.size];
-		//	memset(buffer.data, 0, buffer.size * sizeof(int));
-		//	glGenBuffers(1, &buffer.ubo_id);
-		//	glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo_id);
-		//	glBufferData(GL_UNIFORM_BUFFER, buffer.size << 2, NULL, GL_DYNAMIC_DRAW);
-		//	glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer.ubo_id);
-		//	glUniformBlockBinding(program_id, i, index);
-		//	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-		//	buffers.append(buffer);
-		//} else
-		//	glUniformBlockBinding(program_id, i, index);
-
-		//// append parameter
-		//for (int j = 0; j < buffer.parameters.size(); j++)
-		//{
-		//	const String &name = buffer.parameters[j].name;
-		//	Map<String, int>::Iterator it = parameter_names.find(name);
-		//	if (it == parameter_names.end())
-		//	{
-		//		Parameter parameter;
-		//		parameter.location = -1;
-		//		parameter.index = index;
-		//		parameter.size = buffer.parameters[j].size;
-		//		parameter.offset = buffer.parameters[j].offset;
-		//		parameter.cache_valid = 0;
-		//		int id = parameters.append(parameter);
-		//		parameter_names.append(name, id);
-		//	} else
-		//		Log::error("GLShader::compile(): collision of \"%s\" parameter\n", name.get());
-		//}
-
-		// program buffer
-		//program_buffers.append(index);
+			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, paramsUBO)));
+		} else
+		{
+			for (int i = 0; i < paramsUBO.size(); i++)
+			{
+				_parameters[paramsUBO[i].name] = {(uint)indexFound, (uint)i};
+			}
+		}			
 	}
 }
 
