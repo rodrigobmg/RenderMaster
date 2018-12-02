@@ -189,15 +189,24 @@ GLShader::~GLShader()
 
 API GLShader::SetFloatParameter(const char *name, float value)
 {
+	Parameter &p = _parameters[name];
+	UBO &ubo = allUBO[p.bufferIndex];
+	UBO::UBOParameter &pUBO = ubo.parameters[p.parameterIndex];
+	uint8 *pointer = ubo.data.get() + pUBO.offset;
+	if (memcmp(pointer, &value, pUBO.bytes))
+	{
+		memcpy(pointer, &value, pUBO.bytes);
+		ubo.needFlush = true;
+	}
 	return S_OK;
 }
 
-API GLShader::SetVec4Parameter(const char *name, const vec4 * value)
+API GLShader::SetVec4Parameter(const char *name, const vec4 *value)
 {
 	return S_OK;
 }
 
-API GLShader::SetMat4Parameter(const char *name, const mat4 * value)
+API GLShader::SetMat4Parameter(const char *name, const mat4 *value)
 {
 	return S_OK;
 }

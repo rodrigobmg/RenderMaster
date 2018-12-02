@@ -15,12 +15,19 @@ struct UBO
 	};
 	vector<UBOParameter> parameters;
 
+	std::unique_ptr<uint8[]> data;
+	bool needFlush = true;
+
 private:
 	GLuint _ID = 0u;
 
 public:
 	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<UBOParameter>& paramsIn) :
-		_ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn) {};
+		_ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+	{
+		data = std::make_unique<uint8[]>(bytesIn);
+		memset(data.get(), '\0', bytesIn);
+	}
 	UBO(const UBO& r) = delete;
 	UBO(UBO&& r)
 	{
@@ -29,6 +36,8 @@ public:
 		parameters = std::move(r.parameters);
 		_ID = r._ID;
 		r._ID = 0;
+		data = std::move(data);
+		needFlush = r.needFlush;
 	}
 	UBO& operator=(UBO&& r)
 	{
@@ -37,6 +46,8 @@ public:
 		parameters = std::move(r.parameters);
 		_ID = r._ID;
 		r._ID = 0;
+		data = std::move(data);
+		needFlush = r.needFlush;
 	}
 	UBO& operator=(const UBO& r) = delete;
 	~UBO()
