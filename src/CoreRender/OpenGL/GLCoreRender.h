@@ -1,7 +1,51 @@
 #pragma once
 #include "Common.h"
 
+struct UBO
+{
+	string name;
+	uint bytes = 0;	
 
+	struct UBOParameter
+	{
+		string name;
+		uint offset = 0;
+		uint bytes = 0;
+		uint elements = 0; // number of elements in array
+	};
+	vector<UBOParameter> parameters;
+
+private:
+	GLuint _ID = 0u;
+
+public:
+	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<UBOParameter>& paramsIn) :
+		_ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn) {};
+	UBO(const UBO& r) = delete;
+	UBO(UBO&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		_ID = r._ID;
+		r._ID = 0;
+	}
+	UBO& operator=(UBO&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		_ID = r._ID;
+		r._ID = 0;
+	}
+	UBO& operator=(const UBO& r) = delete;
+	~UBO()
+	{
+		if (_ID) { glDeleteBuffers(1, &_ID); _ID = 0; }
+	}
+};
+
+// deprecated. remove later
 class GLUniformBuffer final : public ICoreConstantBuffer
 {
 	GLuint _ID = 0u;

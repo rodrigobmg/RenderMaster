@@ -8,15 +8,10 @@ class GLShader : public ICoreShader
 	GLuint _geomID = 0u;
 	GLuint _fragID = 0u;
 
-	struct Buffer
-	{
-		GLuint UBO = 0u;
-	};
-
 	struct Parameter
 	{
-		Buffer *buffer = nullptr;
-
+		uint bufferIndex;
+		uint parameterIndex;
 	};
 
 	std::unordered_map<string, Parameter> _parameters;

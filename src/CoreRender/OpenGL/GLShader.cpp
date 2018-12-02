@@ -1,10 +1,13 @@
 #include "pch.h"
 #include "GLShader.h"
+#include "GLCoreRender.h"
 #include "Core.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
+
+extern vector<UBO> allUBO;
 
 GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID) : 
 	_programID(programID), _vertID(vertID), _geomID(geomID), _fragID(fragID)
@@ -60,7 +63,9 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		//buffer.name = name;
 		//buffer.parameters.clear();
 
-		//// buffer parameters
+		vector<UBO::UBOParameter> params;
+
+		// buffer parameters
 		for (int j = 0; j < numIndices; j++)
 		{
 			GLuint index = (GLuint)indicesArray[j];
@@ -107,39 +112,71 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 				default: assert(0 && "GLShader::GLShader(): unknown parameter type");
 			}
 
-		//	// append parameter
-		//	BufferParameter &parameter = buffer.parameters.append();
-		//	parameter.name = name;
-		//	parameter.type = type;
-		//	parameter.size = size;
-		//	parameter.offset = offset >> 2;
+
+			UBO::UBOParameter p;
+			p.name = nameVariable;
+			p.bytes = bytesVariable;
+			p.offset = offsetVariable;
+			p.elements = elementsNum;
+
+			params.push_back(p);
 		}
 
-		//// find buffer
-		//int index = -1;
-		//for (int j = 0; index == -1 && j < buffers.size(); j++)
-		//{
-		//	int is_equal = 1;
-		//	if (buffers[j].name != buffer.name)
-		//		is_equal = 0;
-		//	if (buffers[j].size != buffer.size)
-		//		is_equal = 0;
-		//	if (buffers[j].parameters.size() != buffer.parameters.size())
-		//		is_equal = 0;
-		//	for (int k = 0; is_equal && k < buffer.parameters.size(); k++)
-		//	{
-		//		if (buffers[j].parameters[k].name != buffer.parameters[k].name)
-		//			is_equal = 0;
-		//		if (buffers[j].parameters[k].type != buffer.parameters[k].type)
-		//			is_equal = 0;
-		//		if (buffers[j].parameters[k].size != buffer.parameters[k].size)
-		//			is_equal = 0;
-		//		if (buffers[j].parameters[k].offset != buffer.parameters[k].offset)
-		//			is_equal = 0;
-		//	}
-		//	if (is_equal)
-		//		index = j;
-		//}
+		// sort by offset for pretty view
+		#ifdef _DEBUG
+			std::sort(params.begin(), params.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
+			{ 
+				return a.offset < b.offset; 
+			});
+		#endif
+
+		// find buffer
+		int indexFound = -1;
+		{
+			for (int j = 0; indexFound == -1 && j < allUBO.size(); j++)
+			{
+				bool isEqual = true;
+
+				if (allUBO[j].name != nameUBO)
+					isEqual = false;
+
+				if (allUBO[j].bytes != bytesUBO)
+					isEqual = false;
+
+				if (allUBO[j].parameters.size() != params.size())
+					isEqual = false;
+
+				for (int k = 0; isEqual && k < params.size(); k++)
+				{
+					if (allUBO[j].parameters[k].name != params[k].name ||
+						allUBO[j].parameters[k].bytes != params[k].bytes ||
+						allUBO[j].parameters[k].offset != params[k].offset ||
+						allUBO[j].parameters[k].elements != params[k].elements)
+					{
+						isEqual = 0;
+					}
+				}
+
+				if (isEqual)
+					indexFound = j;
+			}
+		}		
+
+		if (indexFound == -1)
+		{
+			GLuint id;
+
+			glGenBuffers(1, &id);
+			glBindBuffer(GL_UNIFORM_BUFFER, id);
+			vector<char> data(bytesUBO, '\0');
+			glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, params)));
+		}
+
+		
+
 
 		//// create buffer
 		//if (index == -1)
@@ -189,22 +226,22 @@ GLShader::~GLShader()
 	if (_programID != 0) { glDeleteProgram(_programID); _programID = 0; }
 }
 
-API GLShader::SetFloatParameter(const char * name, float value)
+API GLShader::SetFloatParameter(const char *name, float value)
 {
 	return S_OK;
 }
 
-API GLShader::SetVec4Parameter(const char * name, const vec4 * value)
+API GLShader::SetVec4Parameter(const char *name, const vec4 * value)
 {
 	return S_OK;
 }
 
-API GLShader::SetMat4Parameter(const char * name, const mat4 * value)
+API GLShader::SetMat4Parameter(const char *name, const mat4 * value)
 {
 	return S_OK;
 }
 
-API GLShader::SetUintParameter(const char * name, uint value)
+API GLShader::SetUintParameter(const char *name, uint value)
 {
 	return S_OK;
 }
