@@ -9,7 +9,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 extern vector<UBO> allUBO;
 
-GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID) : 
+GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID) :
 	_programID(programID), _vertID(vertID), _geomID(geomID), _fragID(fragID)
 {
 	// Get all unoform variables from all Uniform Buffer Objects for current shader
@@ -187,32 +187,47 @@ GLShader::~GLShader()
 	if (_programID != 0) { glDeleteProgram(_programID); _programID = 0; }
 }
 
-API GLShader::SetFloatParameter(const char *name, float value)
+void GLShader::set_parameter(const char *name, const void *data)
 {
 	Parameter &p = _parameters[name];
+
+	if (p.bufferIndex < 0 || p.parameterIndex < 0)
+	{
+		return;
+		LOG_WARNING_FORMATTED("GLShader::set_parameter() unable find parameter \"%s\"", name);
+	}
+
 	UBO &ubo = allUBO[p.bufferIndex];
 	UBO::UBOParameter &pUBO = ubo.parameters[p.parameterIndex];
 	uint8 *pointer = ubo.data.get() + pUBO.offset;
-	if (memcmp(pointer, &value, pUBO.bytes))
+	if (memcmp(pointer, data, pUBO.bytes))
 	{
-		memcpy(pointer, &value, pUBO.bytes);
+		memcpy(pointer, data, pUBO.bytes);
 		ubo.needFlush = true;
 	}
+}
+
+API GLShader::SetFloatParameter(const char *name, float value)
+{
+	set_parameter(name, &value);
 	return S_OK;
 }
 
 API GLShader::SetVec4Parameter(const char *name, const vec4 *value)
 {
+	set_parameter(name, value);
 	return S_OK;
 }
 
 API GLShader::SetMat4Parameter(const char *name, const mat4 *value)
 {
+	set_parameter(name, value);
 	return S_OK;
 }
 
 API GLShader::SetUintParameter(const char *name, uint value)
 {
+	set_parameter(name, &value);
 	return S_OK;
 }
 

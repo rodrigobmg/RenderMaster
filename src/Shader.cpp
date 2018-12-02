@@ -40,3 +40,28 @@ API Shader::GetFrag(OUT const char ** textOut)
 {
 	return S_OK;
 }
+
+API Shader::SetFloatParameter(const char *name, float value)
+{
+	return _coreShader->SetFloatParameter(name, value);
+}
+
+API Shader::SetVec4Parameter(const char *name, const vec4 *value)
+{
+	return _coreShader->SetVec4Parameter(name, value);
+}
+
+API Shader::SetMat4Parameter(const char *name, const mat4 *value)
+{
+	return _coreShader->SetMat4Parameter(name, value);
+}
+
+API Shader::SetUintParameter(const char *name, uint value)
+{
+	return _coreShader->SetUintParameter(name, value);
+}
+
+API Shader::FlushParameters()
+{
+	return _coreShader->FlushParameters();
+}

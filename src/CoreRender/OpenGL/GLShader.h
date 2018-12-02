@@ -10,11 +10,13 @@ class GLShader : public ICoreShader
 
 	struct Parameter
 	{
-		uint bufferIndex;
-		uint parameterIndex;
+		size_t bufferIndex = -1;
+		size_t parameterIndex = -1;
 	};
 
 	std::unordered_map<string, Parameter> _parameters; // map for fast access to UBO variables
+
+	void set_parameter(const char *name, const void *data);
 
 public:
 

@@ -183,6 +183,8 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 		_pCoreRender->SetMesh(renderMesh.mesh);
 		_pCoreRender->SetShader(shader);
 
+		shader->SetVec4Parameter("main_color", &vec4(1,0,0,1));
+		
 		// mesh parameters
 		{
 			params.MVP = ViewProjMat * renderMesh.modelMat;

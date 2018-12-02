@@ -36,7 +36,7 @@ public:
 		parameters = std::move(r.parameters);
 		_ID = r._ID;
 		r._ID = 0;
-		data = std::move(data);
+		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
 	UBO& operator=(UBO&& r)
@@ -46,7 +46,7 @@ public:
 		parameters = std::move(r.parameters);
 		_ID = r._ID;
 		r._ID = 0;
-		data = std::move(data);
+		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
 	UBO& operator=(const UBO& r) = delete;

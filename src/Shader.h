@@ -18,6 +18,12 @@ public:
 	API GetVert(OUT const char **textOut) override;
 	API GetGeom(OUT const char **textOut) override;
 	API GetFrag(OUT const char **textOut) override;
+	API SetFloatParameter(const char* name, float value) override;
+	API SetVec4Parameter(const char* name, const vec4 *value) override;
+	API SetMat4Parameter(const char* name, const mat4 *value) override;
+	API SetUintParameter(const char* name, uint value) override;
+	API FlushParameters() override;
+
 
 	RUNTIME_ONLY_RESOURCE_HEADER
 };
