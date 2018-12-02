@@ -6,11 +6,11 @@
 #include "GLMesh.h"
 #include "GLTexture.h"
 
-using string = string;
-
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
+
+
 
 GLMesh *getGLMesh(IMesh *mesh)
 {

@@ -407,6 +407,12 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ICoreShader(){}
+		
+		virtual API SetFloatParameter(const char* name, float value) = 0;
+		virtual API SetVec4Parameter(const char* name, const vec4 *value) = 0;
+		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
+		virtual API SetUintParameter(const char* name, uint value) = 0;
+		virtual API FlushParameters() = 0;		
 	};
 
 	class ICoreRender : public ISubSystem

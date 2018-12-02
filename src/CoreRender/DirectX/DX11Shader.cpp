@@ -13,3 +13,29 @@ DX11Shader::~DX11Shader()
 	if (pGeometry) { pGeometry->Release(); pGeometry = nullptr; }
 }
 
+API DX11Shader::SetFloatParameter(const char * name, float value)
+{
+	return S_OK;
+}
+
+API DX11Shader::SetVec4Parameter(const char * name, const vec4 * value)
+{
+	return S_OK;
+}
+
+API DX11Shader::SetMat4Parameter(const char * name, const mat4 * value)
+{
+	return S_OK;
+}
+
+API DX11Shader::SetUintParameter(const char * name, uint value)
+{
+	return S_OK;
+}
+
+API DX11Shader::FlushParameters()
+{
+	return S_OK;
+}
+
+
