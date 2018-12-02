@@ -12,7 +12,7 @@ extern vector<UBO> allUBO;
 GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID) : 
 	_programID(programID), _vertID(vertID), _geomID(geomID), _fragID(fragID)
 {
-	// Get all unoform variables from all Uniform Buffer Objects
+	// Get all unoform variables from all Uniform Buffer Objects for current shader
 
 	glUseProgram(_programID);
 
@@ -54,9 +54,9 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		if (referenced == 0)
 			continue;
 
-		vector<UBO::UBOParameter> paramsUBO;
+		vector<UBO::UBOParameter> parametersUBO;
 
-		// UBO parameters
+		// active UBO parameters
 		for (int j = 0; j < numIndices; j++)
 		{
 			GLuint index = (GLuint)indicesArray[j];
@@ -110,18 +110,18 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			p.offset = offsetVariable;
 			p.elements = elementsNum;
 
-			paramsUBO.push_back(p);
+			parametersUBO.push_back(p);
 		}
 
 		// sort by offset for pretty view
 		#ifdef _DEBUG
-			std::sort(paramsUBO.begin(), paramsUBO.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
+			std::sort(parametersUBO.begin(), parametersUBO.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
 			{ 
 				return a.offset < b.offset; 
 			});
 		#endif
 
-		// find buffer
+		// find existing buffer with same memory layout
 		int indexFound = -1;
 		{
 			for (int j = 0; indexFound == -1 && j < allUBO.size(); j++)
@@ -134,15 +134,15 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 				if (allUBO[j].bytes != bytesUBO)
 					isEqual = false;
 
-				if (allUBO[j].parameters.size() != paramsUBO.size())
+				if (allUBO[j].parameters.size() != parametersUBO.size())
 					isEqual = false;
 
-				for (int k = 0; isEqual && k < paramsUBO.size(); k++)
+				for (int k = 0; isEqual && k < parametersUBO.size(); k++)
 				{
-					if (allUBO[j].parameters[k].name != paramsUBO[k].name ||
-						allUBO[j].parameters[k].bytes != paramsUBO[k].bytes ||
-						allUBO[j].parameters[k].offset != paramsUBO[k].offset ||
-						allUBO[j].parameters[k].elements != paramsUBO[k].elements)
+					if (allUBO[j].parameters[k].name != parametersUBO[k].name ||
+						allUBO[j].parameters[k].bytes != parametersUBO[k].bytes ||
+						allUBO[j].parameters[k].offset != parametersUBO[k].offset ||
+						allUBO[j].parameters[k].elements != parametersUBO[k].elements)
 					{
 						isEqual = 0;
 					}
@@ -163,17 +163,17 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			for (int i = 0; i < paramsUBO.size(); i++)
+			for (int i = 0; i < parametersUBO.size(); i++)
 			{
-				_parameters[paramsUBO[i].name] = {(uint)allUBO.size(), (uint)i};
+				_parameters[parametersUBO[i].name] = {(uint)allUBO.size(), (uint)i};
 			}
 
-			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, paramsUBO)));
+			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
 		} else
 		{
-			for (int i = 0; i < paramsUBO.size(); i++)
+			for (int i = 0; i < parametersUBO.size(); i++)
 			{
-				_parameters[paramsUBO[i].name] = {(uint)indexFound, (uint)i};
+				_parameters[parametersUBO[i].name] = {(uint)indexFound, (uint)i};
 			}
 		}			
 	}

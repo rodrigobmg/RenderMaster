@@ -14,7 +14,7 @@ class GLShader : public ICoreShader
 		uint parameterIndex;
 	};
 
-	std::unordered_map<string, Parameter> _parameters;
+	std::unordered_map<string, Parameter> _parameters; // map for fast access to UBO variables
 
 public:
 
