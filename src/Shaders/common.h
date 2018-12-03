@@ -4,14 +4,14 @@
 #include "lang/language.h"
 
 // Constant buffer
-UNIFORM_BUFFER_BEGIN(common)
+UNIFORM_BUFFER_BEGIN(mesh_parameters)
 	UNIFORM(vec4, main_color)
 	UNIFORM(vec4, nL)
-	UNIFORM(mat4, NM)
 UNIFORM_BUFFER_END
 
-UNIFORM_BUFFER_BEGIN(mvp)
+UNIFORM_BUFFER_BEGIN(vertex_transformation_parameters)
 	UNIFORM(mat4, MVP)
+	UNIFORM(mat4, NM)
 UNIFORM_BUFFER_END
 
 

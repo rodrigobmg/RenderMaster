@@ -181,24 +181,23 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 			continue;
 
 		_pCoreRender->SetMesh(renderMesh.mesh);
-		
-
-		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		_pCoreRender->SetShader(shader);		
 
 		mat4 MVP = ViewProjMat * renderMesh.modelMat;
 		shader->SetMat4Parameter("MVP", &MVP);
 
-		shader->SetMat4Parameter("NM", &mat4());
-
-		shader->SetVec4Parameter("nL", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
+		shader->SetMat4Parameter("NM", &mat4());		
 
 		if (pass == RENDER_PASS::ID)
 		{
 			shader->SetUintParameter("model_id", renderMesh.model_id);
+		} else if (pass == RENDER_PASS::FORWARD)
+		{
+			shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
+			shader->SetVec4Parameter("nL", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
 		}
 
-		shader->FlushParameters();
-		_pCoreRender->SetShader(shader);
+		shader->FlushParameters();		
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}
