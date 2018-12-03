@@ -55,20 +55,6 @@ public:
 	}
 };
 
-// deprecated. remove later
-class GLUniformBuffer final : public ICoreConstantBuffer
-{
-	GLuint _ID = 0u;
-	uint _size = 0u;
-
-public:
-	GLUniformBuffer(GLuint ID, uint size) : _ID(ID), _size(size) {}
-	virtual ~GLUniformBuffer(); 
-
-	inline GLuint ID() const { return _ID; }
-	inline uint size() const { return _size; }
-};
-
 class GLRenderTarget : public ICoreRenderTarget
 {
 	GLuint _ID = 0u;
@@ -165,7 +151,6 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
-	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
@@ -173,8 +158,6 @@ public:
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
-	API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) override;
-	API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(IMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;

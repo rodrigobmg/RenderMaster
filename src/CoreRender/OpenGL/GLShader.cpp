@@ -34,26 +34,6 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 		glGetActiveUniformBlockiv(_programID, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indicesArray);
 
-		// check uniform block reference
-		static const GLuint shader_types[] = {
-			GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER,
-			GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_CONTROL_SHADER,
-			GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_EVALUATION_SHADER,
-			GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER,
-			GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
-			GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER,
-		};
-		GLint referenced = 0;
-		for (int j = 0; j < (int)(sizeof(shader_types) / sizeof(shader_types[0])); j++)
-		{
-			glGetActiveUniformBlockiv(_programID, i, shader_types[j], &referenced);
-			if (referenced > 0)
-				break;
-		}
-
-		if (referenced == 0)
-			continue;
-
 		vector<UBO::UBOParameter> parametersUBO;
 
 		// active UBO parameters

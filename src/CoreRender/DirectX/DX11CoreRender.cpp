@@ -49,12 +49,6 @@ DX11Shader *getDX11Shader(IShader *shader)
 	return static_cast<DX11Shader*>(cs);
 }
 
-DX11ConstantBuffer *getDX11ConstantBuffer(IConstantBuffer *cb)
-{
-	ICoreConstantBuffer *ccb = getCoreConstantBuffer(cb);
-	return static_cast<DX11ConstantBuffer*>(ccb);
-}
-
 DX11RenderTarget *getDX11RenderTarget(IRenderTarget *rt)
 {
 	ICoreRenderTarget *crt = getCoreRenderTarget(rt);
@@ -531,27 +525,27 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 	return S_OK;
 }
 
-API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
-{
-	ComPtr<ID3D11Buffer> ret;
-
-	// make byte width multiplied by 16
-	if (size % 16 != 0)
-		size = 16 * ((size / 16) + 1);
-
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = size;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-	auto hr = _device->CreateBuffer(&bd, nullptr, ret.GetAddressOf());
-
-	*pBuffer = new DX11ConstantBuffer(ret.Get());
-
-	return hr;
-}
+//API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
+//{
+//	ComPtr<ID3D11Buffer> ret;
+//
+//	// make byte width multiplied by 16
+//	if (size % 16 != 0)
+//		size = 16 * ((size / 16) + 1);
+//
+//	D3D11_BUFFER_DESC bd;
+//	ZeroMemory(&bd, sizeof(bd));
+//	bd.Usage = D3D11_USAGE_DEFAULT;
+//	bd.ByteWidth = size;
+//	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+//	bd.CPUAccessFlags = 0;
+//
+//	auto hr = _device->CreateBuffer(&bd, nullptr, ret.GetAddressOf());
+//
+//	*pBuffer = new DX11ConstantBuffer(ret.Get());
+//
+//	return hr;
+//}
 
 DXGI_FORMAT resource_format(TEXTURE_FORMAT format)
 {
@@ -796,27 +790,27 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 	return S_OK;
 }
 
-API DX11CoreRender::SetConstantBuffer(IConstantBuffer *pBuffer, uint slot)
-{
-	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
-	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
-
-	_context->VSSetConstantBuffers(slot, 1, &buf);
-	_context->PSSetConstantBuffers(slot, 1, &buf);
-	_context->GSSetConstantBuffers(slot, 1, &buf);
-
-	return S_OK;
-}
-
-API DX11CoreRender::SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData)
-{
-	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
-	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
-
-	_context->UpdateSubresource(buf, 0, nullptr, pData, 0, 0);
-
-	return S_OK;
-}
+//API DX11CoreRender::SetConstantBuffer(IConstantBuffer *pBuffer, uint slot)
+//{
+//	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
+//	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
+//
+//	_context->VSSetConstantBuffers(slot, 1, &buf);
+//	_context->PSSetConstantBuffers(slot, 1, &buf);
+//	_context->GSSetConstantBuffers(slot, 1, &buf);
+//
+//	return S_OK;
+//}
+//
+//API DX11CoreRender::SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData)
+//{
+//	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
+//	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
+//
+//	_context->UpdateSubresource(buf, 0, nullptr, pData, 0, 0);
+//
+//	return S_OK;
+//}
 
 API DX11CoreRender::Draw(IMesh* mesh)
 {
@@ -1102,11 +1096,6 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 		return nullptr;
 		break;
 	}
-}
-
-DX11ConstantBuffer::~DX11ConstantBuffer()
-{
-	buffer = nullptr;
 }
 
 void DX11RenderTarget::_get_colors(ID3D11RenderTargetView **arrayOut, uint &targetsNum)

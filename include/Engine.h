@@ -387,12 +387,6 @@ namespace RENDER_MASTER
 		virtual API UnbindAll() = 0;
 	};
 
-	class ICoreConstantBuffer
-	{
-	public:
-		virtual ~ICoreConstantBuffer() = default;
-	};
-
 	class ICoreMesh
 	{
 	public:
@@ -431,7 +425,6 @@ namespace RENDER_MASTER
 
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
-		virtual API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
 
@@ -440,8 +433,6 @@ namespace RENDER_MASTER
 		virtual API RestoreDefaultRenderTarget() = 0;
 		virtual API SetShader(IShader *pShader) = 0;
 		virtual API SetMesh(IMesh* mesh) = 0;
-		virtual API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) = 0;
-		virtual API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) = 0;
 		virtual API Draw(IMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
@@ -588,16 +579,6 @@ namespace RENDER_MASTER
 		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
-	class IConstantBuffer : public IUnknown
-	{
-	public:
-		virtual ~IConstantBuffer() = default;
-
-		virtual API GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut) = 0;
-
-		RUNTIME_ONLY_RESOURCE_INTERFACE
-	};
-
 	class IShaderFile : public IUnknown
 	{
 	public:
@@ -667,7 +648,6 @@ namespace RENDER_MASTER
 
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
-		virtual API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) = 0;
 		virtual API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;

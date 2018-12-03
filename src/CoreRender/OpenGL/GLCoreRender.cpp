@@ -30,12 +30,6 @@ GLShader *getGLShader(IShader *shader)
 	return static_cast<GLShader*>(cs);
 }
 
-GLUniformBuffer *getGLConstantBuffer(IConstantBuffer *cb)
-{
-	ICoreConstantBuffer *ccb = getCoreConstantBuffer(cb);
-	return static_cast<GLUniformBuffer*>(ccb);
-}
-
 GLRenderTarget *getGLRenderTarget(IRenderTarget *rt)
 {
 	ICoreRenderTarget *crt = getCoreRenderTarget(rt);
@@ -661,23 +655,6 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 	return S_OK;
 }
 
-API GLCoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
-{
-	GLuint ubo = 0;
-	glGenBuffers(1, &ubo);
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	vector<char> data(size, '\0');
-	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	GLUniformBuffer *gl = new GLUniformBuffer(ubo, size);
-	DEBUG_LOG_FORMATTED("GLCoreRender::CreateConstantBuffer new GLUniformBuffer %#010x", gl);
-
-	*pBuffer = static_cast<ICoreConstantBuffer*>(gl);
-
-	return S_OK;
-}
-
 void get_gl_formats(TEXTURE_FORMAT format, GLint& VRAMFormat, GLenum& sourceFormat, GLenum& sourceType)
 {
 	switch (format)
@@ -876,44 +853,6 @@ API GLCoreRender::SetShader(IShader* pShader)
 	return S_OK;
 }
 
-
-API GLCoreRender::SetConstantBuffer(IConstantBuffer *pBuffer, uint slot)
-{
-	assert(_state.shader.Get() && "GLCoreRender::SetConstantBuffer(): shader not set");
-
-	CHECK_GL_ERRORS();
-
-	// uniform buffer -> UBO slot
-	GLUniformBuffer *glBuf = getGLConstantBuffer(pBuffer);
-	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
-
-	// shader -> UBO slot
-	string s = "const_buffer_" + std::to_string(slot);
-	GLShader *glShader = getGLShader(_state.shader.Get());
-	unsigned int block_index = glGetUniformBlockIndex(glShader->programID(), s.c_str());
-	glUniformBlockBinding(glShader->programID(), block_index, slot);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData)
-{
-	CHECK_GL_ERRORS();
-
-	GLUniformBuffer *glBuf = getGLConstantBuffer(pBuffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
-	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-	memcpy(p, pData, glBuf->size());
-	glUnmapBuffer(GL_UNIFORM_BUFFER);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
 API GLCoreRender::SetMesh(IMesh* mesh)
 {
 	if (_state.mesh.Get() == mesh)
@@ -1049,14 +988,6 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	delete[] p;
 
 	return S_OK;
-}
-
-
-GLUniformBuffer::~GLUniformBuffer()
-{
-	if (_ID)
-		glDeleteBuffers(1, &_ID);
-	_ID = 0;
 }
 
 GLRenderTarget::GLRenderTarget(GLuint idIn) : _ID(idIn)

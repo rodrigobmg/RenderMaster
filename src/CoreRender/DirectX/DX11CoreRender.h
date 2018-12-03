@@ -3,18 +3,6 @@
 
 namespace WRL = Microsoft::WRL;
 
-class DX11ConstantBuffer final: public ICoreConstantBuffer
-{
-	WRL::ComPtr<ID3D11Buffer> buffer;
-
-public:
-
-	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
-	virtual ~DX11ConstantBuffer(); 
-
-	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
-};
-
 
 class DX11RenderTarget : public ICoreRenderTarget
 {
@@ -130,7 +118,6 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
-	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
@@ -138,8 +125,6 @@ public:
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
-	API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) override;
-	API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(IMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint w, uint h) override;

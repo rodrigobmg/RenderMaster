@@ -386,13 +386,6 @@ inline ICoreTexture *getCoreTexture(ITexture *tex)
 	return t;
 }
 
-inline ICoreConstantBuffer *getCoreConstantBuffer(IConstantBuffer *cb)
-{
-	ICoreConstantBuffer *c;
-	cb->GetCoreBuffer(&c);
-	return c;
-}
-
 inline ICoreShader *getCoreShader(IShader *shader)
 {
 	ICoreShader *s;
