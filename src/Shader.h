@@ -5,13 +5,13 @@ class Shader : public IShader
 {
 	ICoreShader *_coreShader = nullptr;
 
-	const char *vert = nullptr;
-	const char *geom = nullptr;
-	const char *frag = nullptr;
+	const char *vertText = nullptr;
+	const char *geomText = nullptr;
+	const char *fragText = nullptr;
 
 public:
 	Shader(ICoreShader *s, const char *vertIn, const char *geomIn, const char *fragIn) :
-		_coreShader(s), vert(vertIn), geom(geomIn), frag(fragIn) {}
+		_coreShader(s), vertText(vertIn), geomText(geomIn), fragText(fragIn) {}
 	virtual ~Shader();
 
 	API GetCoreShader(ICoreShader **shaderOut) override;

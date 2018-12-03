@@ -183,30 +183,22 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 		_pCoreRender->SetMesh(renderMesh.mesh);
 		_pCoreRender->SetShader(shader);
 
-		shader->SetVec4Parameter("main_color", &vec4(1,0,0,1));
-		
-		// mesh parameters
-		{
-			params.MVP = ViewProjMat * renderMesh.modelMat;
-			params.main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			if ((int)(attribs & INPUT_ATTRUBUTE::NORMAL))
-			{
-				params.NM = mat4();
-				params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
-			}
+		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-			_pCoreRender->SetConstantBufferData(_meshParameters.Get(), &params.main_color);
-			_pCoreRender->SetConstantBuffer(_meshParameters.Get(), 0);
-		}
+		mat4 MVP = ViewProjMat * renderMesh.modelMat;
+		shader->SetMat4Parameter("MVP", &MVP);
 
-		// id parameters
+		shader->SetMat4Parameter("NM", &mat4());
+
+		shader->SetVec4Parameter("nL", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
+
 		if (pass == RENDER_PASS::ID)
 		{
-			id_params.model_id = renderMesh.model_id;
-
-			_pCoreRender->SetConstantBufferData(_idParameters.Get(), &id_params.model_id);
-			_pCoreRender->SetConstantBuffer(_idParameters.Get(), 1);
+			shader->SetUintParameter("model_id", renderMesh.model_id);
 		}
+
+		shader->FlushParameters();
+
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}

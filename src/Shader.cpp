@@ -15,9 +15,9 @@ Shader::~Shader()
 	delete _coreShader;
 	_coreShader = nullptr;
 
-	delete[] vert;
-	delete[] geom;
-	delete[] frag;
+	delete[] vertText;
+	delete[] geomText;
+	delete[] fragText;
 }
 
 API Shader::GetCoreShader(ICoreShader **shaderOut)
@@ -26,18 +26,21 @@ API Shader::GetCoreShader(ICoreShader **shaderOut)
 	return S_OK;
 }
 
-API Shader::GetVert(OUT const char ** textOut)
+API Shader::GetVert(OUT const char **textOut)
 {
+	*textOut = vertText;
 	return S_OK;
 }
 
-API Shader::GetGeom(OUT const char ** textOut)
+API Shader::GetGeom(OUT const char **textOut)
 {
+	*textOut = geomText;
 	return S_OK;
 }
 
-API Shader::GetFrag(OUT const char ** textOut)
+API Shader::GetFrag(OUT const char **textOut)
 {
+	*textOut = fragText;
 	return S_OK;
 }
 

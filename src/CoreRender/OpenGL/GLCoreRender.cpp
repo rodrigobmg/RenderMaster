@@ -868,7 +868,7 @@ API GLCoreRender::SetShader(IShader* pShader)
 	else
 	{
 		GLShader *pGLShader = getGLShader(pShader);
-		glUseProgram(pGLShader->programID());
+		pGLShader->bind();
 	}
 
 	CHECK_GL_ERRORS();

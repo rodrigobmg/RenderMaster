@@ -18,7 +18,6 @@ struct UBO
 	std::unique_ptr<uint8[]> data;
 	bool needFlush = true;
 
-private:
 	GLuint _ID = 0u;
 
 public:

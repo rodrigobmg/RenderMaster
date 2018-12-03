@@ -163,17 +163,22 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+			_bufferIndicies.push_back(allUBO.size());
+
 			for (int i = 0; i < parametersUBO.size(); i++)
 			{
-				_parameters[parametersUBO[i].name] = {(uint)allUBO.size(), (uint)i};
+				_parameters[parametersUBO[i].name] = {(int)allUBO.size(), (int)i};
 			}
 
 			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
+			
 		} else
 		{
+			_bufferIndicies.push_back(indexFound);
+
 			for (int i = 0; i < parametersUBO.size(); i++)
 			{
-				_parameters[parametersUBO[i].name] = {(uint)indexFound, (uint)i};
+				_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
 			}
 		}			
 	}
@@ -189,13 +194,17 @@ GLShader::~GLShader()
 
 void GLShader::set_parameter(const char *name, const void *data)
 {
+	auto it = _parameters.find(name);
+	if (it == _parameters.end())
+	{
+		auto &p = _parameters[name];
+		LOG_WARNING_FORMATTED("GLShader::set_parameter() unable find parameter \"%s\"", name);
+	}
+
 	Parameter &p = _parameters[name];
 
 	if (p.bufferIndex < 0 || p.parameterIndex < 0)
-	{
 		return;
-		LOG_WARNING_FORMATTED("GLShader::set_parameter() unable find parameter \"%s\"", name);
-	}
 
 	UBO &ubo = allUBO[p.bufferIndex];
 	UBO::UBOParameter &pUBO = ubo.parameters[p.parameterIndex];
@@ -204,6 +213,17 @@ void GLShader::set_parameter(const char *name, const void *data)
 	{
 		memcpy(pointer, data, pUBO.bytes);
 		ubo.needFlush = true;
+	}
+}
+
+void GLShader::bind()
+{
+	glUseProgram(_programID);
+	for (int i = 0; i < _bufferIndicies.size(); i++)
+	{
+		UBO &ubo = allUBO[_bufferIndicies[i]];
+		glBindBufferBase(GL_UNIFORM_BUFFER, i, ubo._ID);
+		glUniformBlockBinding(_programID, i, i);
 	}
 }
 
@@ -233,6 +253,16 @@ API GLShader::SetUintParameter(const char *name, uint value)
 
 API GLShader::FlushParameters()
 {
+	for (auto& idx : _bufferIndicies)
+	{
+		UBO &ubo = allUBO[idx];
+		if (ubo.needFlush)
+		{
+			glNamedBufferSubData(ubo._ID, 0, ubo.bytes, ubo.data.get());
+			ubo.needFlush = false;
+		}
+	}
+
 	return S_OK;
 }
 

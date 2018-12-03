@@ -10,11 +10,12 @@ class GLShader : public ICoreShader
 
 	struct Parameter
 	{
-		size_t bufferIndex = -1;
-		size_t parameterIndex = -1;
+		int bufferIndex = -1;
+		int parameterIndex = -1;
 	};
 
 	std::unordered_map<string, Parameter> _parameters; // map for fast access to UBO variables
+	std::vector<size_t> _bufferIndicies; // slot -> index of UBO in allUBO array  
 
 	void set_parameter(const char *name, const void *data);
 
@@ -24,6 +25,7 @@ public:
 	virtual ~GLShader();
 
 	GLuint programID() const { return _programID; }
+	void bind();
 	
 	API SetFloatParameter(const char* name, float value) override;
 	API SetVec4Parameter(const char* name, const vec4 *value) override;
