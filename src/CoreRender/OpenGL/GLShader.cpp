@@ -133,7 +133,15 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			}
 		}		
 
-		if (indexFound == -1)
+		if (indexFound != -1) // buffer found
+		{
+			_bufferIndicies.push_back(indexFound);
+
+			for (int i = 0; i < parametersUBO.size(); i++)
+			{
+				_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
+			}
+		} else // not found => create new
 		{
 			GLuint id;
 
@@ -150,17 +158,8 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 				_parameters[parametersUBO[i].name] = {(int)UBOpool.size(), (int)i};
 			}
 
-			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
-			
-		} else
-		{
-			_bufferIndicies.push_back(indexFound);
-
-			for (int i = 0; i < parametersUBO.size(); i++)
-			{
-				_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
-			}
-		}			
+			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));			
+		}
 	}
 }
 

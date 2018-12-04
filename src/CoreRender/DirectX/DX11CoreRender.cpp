@@ -11,6 +11,8 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+vector<ConstantBuffer> ConstantBufferPool;
+
 // By default in DirectX (and OpenGL) CPU-GPU transfer implemented in column-major style.
 // We change this behaviour only here globally for all shaders by flag "D3DCOMPILE_PACK_MATRIX_ROW_MAJOR"
 // to match C++ math lib wich keeps matrix in rom_major style.
@@ -19,13 +21,6 @@ DEFINE_LOG_HELPERS(_pCore)
 #else
 	#define SHADER_COMPILE_FLAGS (D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_OPTIMIZATION_LEVEL3)
 #endif
-
-enum
-{
-	SHADER_VERTEX,
-	SHADER_GEOMETRY,
-	SHADER_FRAGMENT,
-};
 
 const char *get_shader_profile(SHADER_TYPE type);
 const char *get_main_function(SHADER_TYPE type);
@@ -256,6 +251,8 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 
 API DX11CoreRender::Free()
 {
+	ConstantBufferPool.clear();
+
 	for (auto &callback : _onCleanBroadcast)
 		callback();
 

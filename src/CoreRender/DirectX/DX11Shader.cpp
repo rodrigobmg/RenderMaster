@@ -1,10 +1,13 @@
 #include "pch.h"
 #include "DX11Shader.h"
+#include "DX11CoreRender.h"
 #include "Core.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
+
+extern vector<ConstantBuffer> ConstantBufferPool;
 
 void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 {
@@ -14,6 +17,7 @@ void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 	D3D11_SHADER_DESC shaderDesc;
 	reflection->GetDesc(&shaderDesc);
 
+	// each Constant Buffer
 	for(unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
 	{			
 		ID3D11ShaderReflectionConstantBuffer* buffer = reflection->GetConstantBufferByIndex(i);
@@ -31,11 +35,60 @@ void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 				registerIndex = ibdesc.BindPoint;
 		}
 
-		////
-		////Add constant buffer
-		////
-		//ConstantShaderBuffer* shaderbuffer = new ConstantShaderBuffer(register_index, Engine::String.ConvertToWideStr(bdesc.Name), buffer, &bdesc);
-		//mShaderBuffers.push_back(shaderbuffer);
+		vector<ConstantBuffer::ConstantBufferParameter> cbParameters;
+
+		// each parameters
+		for (auto j = 0; j < bufferDesc.Variables; j++)
+		{
+			ID3D11ShaderReflectionVariable *var = buffer->GetVariableByIndex(j);
+			D3D11_SHADER_VARIABLE_DESC varDesc;
+			var->GetDesc(&varDesc);
+
+			uint bytesVariable = varDesc.Size;
+
+			ConstantBuffer::ConstantBufferParameter p;
+			p.name = varDesc.Name;
+			p.bytes = varDesc.Size;
+			p.offset = varDesc.StartOffset;
+			p.elements = 1; // TODO: arrays		
+
+			cbParameters.push_back(p);
+		}
+
+		// find existing buffer with same memory layout
+		int indexFound = -1;
+		{
+			for (int j = 0; indexFound == -1 && j < ConstantBufferPool.size(); j++)
+			{
+				bool isEqual = true;
+
+				if (ConstantBufferPool[j].name != bufferDesc.Name)
+					isEqual = false;
+
+				if (ConstantBufferPool[j].bytes != bufferDesc.Size)
+					isEqual = false;
+
+				if (ConstantBufferPool[j].parameters.size() != cbParameters.size())
+					isEqual = false;
+
+				for (int k = 0; isEqual && k < cbParameters.size(); k++)
+				{
+					if (ConstantBufferPool[j].parameters[k].name != cbParameters[k].name ||
+						ConstantBufferPool[j].parameters[k].bytes != cbParameters[k].bytes ||
+						ConstantBufferPool[j].parameters[k].offset != cbParameters[k].offset ||
+						ConstantBufferPool[j].parameters[k].elements != cbParameters[k].elements)
+					{
+						isEqual = 0;
+					}
+				}
+
+				if (isEqual)
+					indexFound = j;
+			}
+		}
+
+
+
 	}
 
 }

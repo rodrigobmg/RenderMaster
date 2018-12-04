@@ -3,6 +3,55 @@
 
 namespace WRL = Microsoft::WRL;
 
+struct ConstantBuffer
+{
+	string name;
+	uint bytes = 0;	
+
+	struct ConstantBufferParameter
+	{
+		string name;
+		uint offset = 0;
+		uint bytes = 0;
+		uint elements = 1; // number of elements in array (if parameter is array)
+	};
+	vector<ConstantBufferParameter> parameters;
+
+	std::unique_ptr<uint8[]> data;
+	bool needFlush = true;
+
+	WRL::ComPtr<ID3D11Buffer> dxBuffer;
+
+public:
+	ConstantBuffer(WRL::ComPtr<ID3D11Buffer> dxBufferIn, uint bytesIn, const string& nameIn, const vector<ConstantBufferParameter>& paramsIn) :
+		dxBuffer(dxBufferIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+	{
+		data = std::make_unique<uint8[]>(bytesIn);
+		memset(data.get(), '\0', bytesIn);
+	}
+	ConstantBuffer(const ConstantBuffer& r) = delete;
+	ConstantBuffer(ConstantBuffer&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		dxBuffer = r.dxBuffer;
+		r.dxBuffer = nullptr;
+		data = std::move(r.data);
+		needFlush = r.needFlush;
+	}
+	ConstantBuffer& operator=(ConstantBuffer&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		dxBuffer = r.dxBuffer;
+		r.dxBuffer = nullptr;
+		data = std::move(r.data);
+		needFlush = r.needFlush;
+	}
+	ConstantBuffer& operator=(const ConstantBuffer& r) = delete;
+};
 
 class DX11RenderTarget : public ICoreRenderTarget
 {
