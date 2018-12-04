@@ -26,13 +26,6 @@ public:
 	API UnbindAll() override;
 };
 
-enum class SHADER_TYPE
-{
-	SHADER_VERTEX,
-	SHADER_GEOMETRY,
-	SHADER_FRAGMENT
-};
-
 class DX11CoreRender final : public ICoreRender
 {
 	WRL::ComPtr<ID3D11Device> _device;
@@ -105,7 +98,7 @@ class DX11CoreRender final : public ICoreRender
 	bool create_default_buffers(uint w, uint h);
 	void destroy_default_buffers();
 
-	ID3D11DeviceChild* create_shader_by_src(SHADER_TYPE type, const char *src, HRESULT& err);
+	WRL::ComPtr<ID3DBlob> create_shader_by_src(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, HRESULT& err);
 	UINT msaa_quality(DXGI_FORMAT format, int MSAASamples);
 	
 public:

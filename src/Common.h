@@ -372,6 +372,13 @@ public: \
 	}
 
 //
+enum class SHADER_TYPE
+{
+	SHADER_VERTEX,
+	SHADER_GEOMETRY,
+	SHADER_FRAGMENT
+};
+
 inline ICoreMesh *getCoreMesh(IMesh *mesh)
 {
 	ICoreMesh *m;

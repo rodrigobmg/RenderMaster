@@ -495,15 +495,17 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText)
 {
 	HRESULT err;
-
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_TYPE::SHADER_VERTEX, vertText, err);
+	
+	ID3D11VertexShader *vs = nullptr;
+	auto vb = create_shader_by_src((ID3D11DeviceChild*&)vs, SHADER_TYPE::SHADER_VERTEX, vertText, err);
 	if (!vs)
 	{
 		*pShader = nullptr;
 		return err;
 	}
 
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_TYPE::SHADER_FRAGMENT, fragText, err);
+	ID3D11PixelShader *fs = nullptr;
+	auto fb = create_shader_by_src((ID3D11DeviceChild*&)fs, SHADER_TYPE::SHADER_FRAGMENT, fragText, err);
 	if (!fs)
 	{
 		vs->Release();
@@ -511,16 +513,26 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 		return err;
 	}
 
-	ID3D11GeometryShader *gs = geomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_TYPE::SHADER_GEOMETRY, geomText, err) : nullptr;
-	if (!gs && geomText)
+
+	ID3D11GeometryShader *gs = nullptr;
+	ComPtr<ID3DBlob> gb;
+	if (geomText)
 	{
-		vs->Release();
-		fs->Release();
-		*pShader = nullptr;
-		return err;
+		gb = create_shader_by_src((ID3D11DeviceChild*&)gs, SHADER_TYPE::SHADER_GEOMETRY, geomText, err);
+		if (!gs && geomText)
+		{
+			vs->Release();
+			fs->Release();
+			*pShader = nullptr;
+			return err;
+		}
 	}
 
-	*pShader = new DX11Shader(vs, gs, fs);
+	ShaderInitData vi = {vs, (unsigned char *)vb->GetBufferPointer(), vb->GetBufferSize()};
+	ShaderInitData fi = {fs, (unsigned char *)fb->GetBufferPointer(), fb->GetBufferSize()};
+	ShaderInitData gi = {gs, (gs ? (unsigned char *)(gb->GetBufferPointer()) : nullptr), (gs ? gb->GetBufferSize() : 0)};
+
+	*pShader = new DX11Shader(vi, fi, gi);
 
 	return S_OK;
 }
@@ -936,7 +948,7 @@ API DX11CoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(SHADER_TYPE type, const char* src, HRESULT& err)
+ComPtr<ID3DBlob> DX11CoreRender::create_shader_by_src(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char* src, HRESULT& err)
 {
 	ID3D11DeviceChild *ret = nullptr;
 	ComPtr<ID3DBlob> error_buffer;
@@ -979,11 +991,10 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(SHADER_TYPE type, const 
 			break;
 		}
 
-		if (ret)
-			return ret;
+		poiterOut = ret;
 	}
 
-	return nullptr;
+	return shader_buffer;
 }
 
 API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readBytes, uint x, uint y)

@@ -1,16 +1,24 @@
 #pragma once
 #include "Common.h"
 
+struct ShaderInitData
+{
+	void *pointer;
+	unsigned char *bytecode;
+	size_t size;
+};
+
 class DX11Shader : public ICoreShader
 {
 	ID3D11VertexShader *pVertex = nullptr;
 	ID3D11GeometryShader *pGeometry = nullptr;
 	ID3D11PixelShader *pFragment = nullptr;
 
+	void initShader(ShaderInitData& data, SHADER_TYPE type);
+
 public:
 
-	DX11Shader(ID3D11VertexShader* pVeretxIn, ID3D11GeometryShader* pGeometryIn, ID3D11PixelShader* pFragmentIn) : 
-		pVertex(pVeretxIn), pGeometry(pGeometryIn), pFragment(pFragmentIn){}
+	DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& gs);
 	virtual ~DX11Shader();
 
 	ID3D11VertexShader*		vs() const { return pVertex; }
