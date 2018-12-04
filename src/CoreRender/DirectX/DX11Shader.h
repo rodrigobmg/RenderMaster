@@ -21,7 +21,7 @@ class DX11Shader : public ICoreShader
 
 		// all buffers need to bind for work with shader
 		// slot -> index of Constant Buffer in ConstantBufferPool
-		std::vector<size_t> _bufferIndicies; 
+		vector<size_t> _bufferIndicies; 
 
 		struct Parameter
 		{
@@ -31,9 +31,9 @@ class DX11Shader : public ICoreShader
 		std::unordered_map<string, Parameter> _parameters; // all shader parameters
 	};
 
-	SubShader v;
-	SubShader f;
-	SubShader g;
+	SubShader v{};
+	SubShader f{};
+	SubShader g{};
 
 	void initShader(ShaderInitData& data, SHADER_TYPE type);
 public:
@@ -44,6 +44,8 @@ public:
 	ID3D11VertexShader*		vs() const { return v.pointer.pVertex; }
 	ID3D11GeometryShader*	gs() const { return g.pointer.pGeometry; }
 	ID3D11PixelShader*		fs() const { return f.pointer.pFragment; }
+
+	void bind(ID3D11DeviceContext *ctx);
 
 	API SetFloatParameter(const char* name, float value) override;
 	API SetVec4Parameter(const char* name, const vec4 *value) override;

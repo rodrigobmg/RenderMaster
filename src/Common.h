@@ -215,6 +215,13 @@ inline ISceneManager *getSceneManager(ICore *core)
 	return ret;
 }
 
+inline ICoreRender *getCoreRender(ICore *core)
+{
+	ICoreRender *ret;
+	core->GetSubSystem((ISubSystem**)&ret, SUBSYSTEM_TYPE::CORE_RENDER);
+	return ret;
+}
+
 // core render
 int get_msaa_samples(INIT_FLAGS flags);
 string msaa_to_string(int samples);

@@ -152,6 +152,8 @@ class DX11CoreRender final : public ICoreRender
 	
 public:
 
+	WRL::ComPtr<ID3D11Device> getDevice() { return _device; }
+
 	DX11CoreRender();
 	virtual ~DX11CoreRender();
 

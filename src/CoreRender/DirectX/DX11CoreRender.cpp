@@ -743,11 +743,9 @@ API DX11CoreRender::SetShader(IShader* pShader)
 
 	_state.shader = ComPtr<IShader>(pShader);
 
-	const DX11Shader *dxShader = getDX11Shader(pShader);
+	DX11Shader *dxShader = getDX11Shader(pShader);
 
-	_context->VSSetShader(dxShader->vs(), nullptr, 0);
-	_context->GSSetShader(dxShader->gs(), nullptr, 0);
-	_context->PSSetShader(dxShader->fs(), nullptr, 0);
+	dxShader->bind(_context.Get());
 
 	return S_OK;
 }

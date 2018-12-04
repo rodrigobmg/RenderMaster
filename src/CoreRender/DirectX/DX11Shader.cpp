@@ -11,6 +11,13 @@ extern vector<ConstantBuffer> ConstantBufferPool;
 
 void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 {
+	switch (type)
+	{
+		case SHADER_TYPE::SHADER_VERTEX: v.pointer.pVertex = (ID3D11VertexShader *)data.pointer; break;
+		case SHADER_TYPE::SHADER_GEOMETRY: g.pointer.pGeometry = (ID3D11GeometryShader *)data.pointer; break;
+		case SHADER_TYPE::SHADER_FRAGMENT:  f.pointer.pFragment = (ID3D11PixelShader *)data.pointer; break;
+	}
+
 	ID3D11ShaderReflection* reflection = nullptr;
 	D3D11Reflect(data.bytecode, data.size, &reflection);
 
@@ -87,33 +94,54 @@ void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 			}
 		}
 
-		//if (indexFound != -1) // buffer found
-		//{
-		//	_bufferIndicies.push_back(indexFound);
+		vector<size_t> *_b;
+		std::unordered_map<string, SubShader::Parameter> *_p;
 
-		//	for (int i = 0; i < parametersUBO.size(); i++)
-		//	{
-		//		_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
-		//	}
-		//} else // not found => create new
-		//{
-		//	GLuint id;
+		switch (type)
+		{
+			case SHADER_TYPE::SHADER_VERTEX:	_b = &v._bufferIndicies; _p = &v._parameters; break;
+			case SHADER_TYPE::SHADER_GEOMETRY:	_b = &g._bufferIndicies; _p = &g._parameters; break;
+			case SHADER_TYPE::SHADER_FRAGMENT:	_b = &f._bufferIndicies; _p = &f._parameters; break;
+		};
 
-		//	glGenBuffers(1, &id);
-		//	glBindBuffer(GL_UNIFORM_BUFFER, id);
-		//	vector<char> data(bytesUBO, '\0');
-		//	glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
-		//	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		if (indexFound != -1) // buffer found
+		{
+			_b->push_back(indexFound);
 
-		//	_bufferIndicies.push_back(UBOpool.size());
+			for (int i = 0; i < cbParameters.size(); i++)
+			{
+				(*_p)[cbParameters[i].name] = {(int)indexFound, (int)i};
+			}
+		} else // not found => create new
+		{
+			WRL::ComPtr<ID3D11Buffer> dxBuffer;
+		
+			// make byte width multiplied by 16
+			uint size = bufferDesc.Size;
+			if (size % 16 != 0)
+				size = 16 * ((size / 16) + 1);
+		
+			D3D11_BUFFER_DESC bd;
+			ZeroMemory(&bd, sizeof(bd));
+			bd.Usage = D3D11_USAGE_DEFAULT;
+			bd.ByteWidth = size;
+			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			bd.CPUAccessFlags = 0;
 
-		//	for (int i = 0; i < parametersUBO.size(); i++)
-		//	{
-		//		_parameters[parametersUBO[i].name] = {(int)UBOpool.size(), (int)i};
-		//	}
+			ICoreRender *coreRender = getCoreRender(_pCore);
+			DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
 
-		//	UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));			
-		//}
+			auto hr = dxRender->getDevice()->CreateBuffer(&bd, nullptr, dxBuffer.GetAddressOf());		
+
+			_b->push_back(ConstantBufferPool.size());
+
+			for (int k = 0; k < cbParameters.size(); k++)
+			{
+				(*_p)[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
+			}
+
+			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));			
+		}
 	}
 }
 
@@ -131,6 +159,15 @@ DX11Shader::~DX11Shader()
 	if (v.pointer.pVertex)		{ v.pointer.pVertex->Release();		v.pointer.pVertex = nullptr; }
 	if (f.pointer.pFragment)	{ f.pointer.pFragment->Release();	f.pointer.pFragment = nullptr; }
 	if (g.pointer.pGeometry)	{ g.pointer.pGeometry->Release();	g.pointer.pGeometry = nullptr; }
+}
+
+void DX11Shader::bind(ID3D11DeviceContext *ctx)
+{
+	ctx->VSSetShader(vs(), nullptr, 0);
+	ctx->PSSetShader(fs(), nullptr, 0);
+
+	if (gs())
+		ctx->GSSetShader(gs(), nullptr, 0);
 }
 
 API DX11Shader::SetFloatParameter(const char * name, float value)
