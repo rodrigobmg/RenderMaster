@@ -38,7 +38,7 @@ void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 		vector<ConstantBuffer::ConstantBufferParameter> cbParameters;
 
 		// each parameters
-		for (auto j = 0; j < bufferDesc.Variables; j++)
+		for (uint j = 0; j < bufferDesc.Variables; j++)
 		{
 			ID3D11ShaderReflectionVariable *var = buffer->GetVariableByIndex(j);
 			D3D11_SHADER_VARIABLE_DESC varDesc;
@@ -87,10 +87,34 @@ void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 			}
 		}
 
+		//if (indexFound != -1) // buffer found
+		//{
+		//	_bufferIndicies.push_back(indexFound);
 
+		//	for (int i = 0; i < parametersUBO.size(); i++)
+		//	{
+		//		_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
+		//	}
+		//} else // not found => create new
+		//{
+		//	GLuint id;
 
+		//	glGenBuffers(1, &id);
+		//	glBindBuffer(GL_UNIFORM_BUFFER, id);
+		//	vector<char> data(bytesUBO, '\0');
+		//	glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
+		//	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		//	_bufferIndicies.push_back(UBOpool.size());
+
+		//	for (int i = 0; i < parametersUBO.size(); i++)
+		//	{
+		//		_parameters[parametersUBO[i].name] = {(int)UBOpool.size(), (int)i};
+		//	}
+
+		//	UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));			
+		//}
 	}
-
 }
 
 DX11Shader::DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& gs)
@@ -104,9 +128,9 @@ DX11Shader::DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& g
 
 DX11Shader::~DX11Shader()
 {
-	if (pVertex) { pVertex->Release(); pVertex = nullptr;	}
-	if (pFragment) { pFragment->Release(); pFragment = nullptr; }
-	if (pGeometry) { pGeometry->Release(); pGeometry = nullptr; }
+	if (v.pointer.pVertex)		{ v.pointer.pVertex->Release();		v.pointer.pVertex = nullptr; }
+	if (f.pointer.pFragment)	{ f.pointer.pFragment->Release();	f.pointer.pFragment = nullptr; }
+	if (g.pointer.pGeometry)	{ g.pointer.pGeometry->Release();	g.pointer.pGeometry = nullptr; }
 }
 
 API DX11Shader::SetFloatParameter(const char * name, float value)
