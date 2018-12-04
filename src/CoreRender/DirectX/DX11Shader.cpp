@@ -9,7 +9,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 extern vector<ConstantBuffer> ConstantBufferPool;
 
-void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
+void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 {
 	switch (type)
 	{
@@ -147,11 +147,11 @@ void DX11Shader::initShader(ShaderInitData& data, SHADER_TYPE type)
 
 DX11Shader::DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& gs)
 {
-	initShader(vs, SHADER_TYPE::SHADER_VERTEX);
-	initShader(fs, SHADER_TYPE::SHADER_FRAGMENT);
+	initSubShader(vs, SHADER_TYPE::SHADER_VERTEX);
+	initSubShader(fs, SHADER_TYPE::SHADER_FRAGMENT);
 
 	if (gs.pointer)
-		initShader(gs, SHADER_TYPE::SHADER_GEOMETRY);
+		initSubShader(gs, SHADER_TYPE::SHADER_GEOMETRY);
 }
 
 DX11Shader::~DX11Shader()

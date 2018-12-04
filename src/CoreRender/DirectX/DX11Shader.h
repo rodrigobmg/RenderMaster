@@ -35,7 +35,7 @@ class DX11Shader : public ICoreShader
 	SubShader f{};
 	SubShader g{};
 
-	void initShader(ShaderInitData& data, SHADER_TYPE type);
+	void initSubShader(ShaderInitData& data, SHADER_TYPE type);
 public:
 
 	DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& gs);
