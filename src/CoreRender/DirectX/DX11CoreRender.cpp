@@ -27,8 +27,8 @@ enum
 	SHADER_FRAGMENT,
 };
 
-const char *get_shader_profile(int type);
-const char *get_main_function(int type);
+const char *get_shader_profile(SHADER_TYPE type);
+const char *get_main_function(SHADER_TYPE type);
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 
 DX11Mesh *getDX11Mesh(IMesh *mesh)
@@ -410,7 +410,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	ComPtr<ID3DBlob> errorBuffer;
 	ComPtr<ID3DBlob> shaderBuffer;
 
-	auto hr = D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(0), SHADER_COMPILE_FLAGS, 0, &shaderBuffer, &errorBuffer);
+	auto hr = D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(SHADER_TYPE::SHADER_VERTEX), SHADER_COMPILE_FLAGS, 0, &shaderBuffer, &errorBuffer);
 
 	if (FAILED(hr))
 	{
@@ -496,14 +496,14 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 {
 	HRESULT err;
 
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vertText, err);
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_TYPE::SHADER_VERTEX, vertText, err);
 	if (!vs)
 	{
 		*pShader = nullptr;
 		return err;
 	}
 
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, fragText, err);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_TYPE::SHADER_FRAGMENT, fragText, err);
 	if (!fs)
 	{
 		vs->Release();
@@ -511,7 +511,7 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 		return err;
 	}
 
-	ID3D11GeometryShader *gs = geomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geomText, err) : nullptr;
+	ID3D11GeometryShader *gs = geomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_TYPE::SHADER_GEOMETRY, geomText, err) : nullptr;
 	if (!gs && geomText)
 	{
 		vs->Release();
@@ -525,49 +525,27 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 	return S_OK;
 }
 
-//API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
-//{
-//	ComPtr<ID3D11Buffer> ret;
-//
-//	// make byte width multiplied by 16
-//	if (size % 16 != 0)
-//		size = 16 * ((size / 16) + 1);
-//
-//	D3D11_BUFFER_DESC bd;
-//	ZeroMemory(&bd, sizeof(bd));
-//	bd.Usage = D3D11_USAGE_DEFAULT;
-//	bd.ByteWidth = size;
-//	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-//	bd.CPUAccessFlags = 0;
-//
-//	auto hr = _device->CreateBuffer(&bd, nullptr, ret.GetAddressOf());
-//
-//	*pBuffer = new DX11ConstantBuffer(ret.Get());
-//
-//	return hr;
-//}
-
 DXGI_FORMAT resource_format(TEXTURE_FORMAT format)
 {
 	switch (format)
 	{
-	case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
-	case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
-	case TEXTURE_FORMAT::RGB8:
-	case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
-	case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
-	case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
-	case TEXTURE_FORMAT::RGB16F:
-	case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
-	case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
-	case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
-	case TEXTURE_FORMAT::RGB32F:
-	case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
-	case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
-	case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
-	case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
-	case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
-	case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_R24G8_TYPELESS;
+		case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
+		case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
+		case TEXTURE_FORMAT::RGB8:
+		case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
+		case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
+		case TEXTURE_FORMAT::RGB16F:
+		case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
+		case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
+		case TEXTURE_FORMAT::RGB32F:
+		case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
+		case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
+		case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
+		case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
+		case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
+		case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_R24G8_TYPELESS;
 	}
 
 	LOG_WARNING("eng_to_d3d11_format(): unknown format\n");
@@ -958,7 +936,7 @@ API DX11CoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src, HRESULT& err)
+ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(SHADER_TYPE type, const char* src, HRESULT& err)
 {
 	ID3D11DeviceChild *ret = nullptr;
 	ComPtr<ID3DBlob> error_buffer;
@@ -971,9 +949,9 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 		const char *type_str = nullptr;
 		switch (type)
 		{
-		case SHADER_VERTEX: type_str = "vertex"; err = E_VERTEX_SHADER_FAILED_COMPILE; break;
-		case SHADER_GEOMETRY: type_str = "geometry"; err = E_GEOM_SHADER_FAILED_COMPILE; break;
-		case SHADER_FRAGMENT: type_str = "fragment"; err = E_FRAGMENT_SHADER_FAILED_COMPILE; break;
+		case SHADER_TYPE::SHADER_VERTEX: type_str = "vertex"; err = E_VERTEX_SHADER_FAILED_COMPILE; break;
+		case SHADER_TYPE::SHADER_GEOMETRY: type_str = "geometry"; err = E_GEOM_SHADER_FAILED_COMPILE; break;
+		case SHADER_TYPE::SHADER_FRAGMENT: type_str = "fragment"; err = E_FRAGMENT_SHADER_FAILED_COMPILE; break;
 		}
 
 		if (error_buffer)
@@ -990,13 +968,13 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 
 		switch (type)
 		{
-		case SHADER_VERTEX:
+		case SHADER_TYPE::SHADER_VERTEX:
 			res = _device->CreateVertexShader(data, size, NULL, (ID3D11VertexShader**)&ret);
 			break;
-		case SHADER_GEOMETRY:
+		case SHADER_TYPE::SHADER_GEOMETRY:
 			res = _device->CreateGeometryShader(data, size, NULL, (ID3D11GeometryShader**)&ret);
 			break;
-		case SHADER_FRAGMENT:
+		case SHADER_TYPE::SHADER_FRAGMENT:
 			res = _device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
 			break;
 		}
@@ -1056,24 +1034,24 @@ API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *read
 	return S_OK;
 }
 
-const char *get_shader_profile(int type)
+const char *get_shader_profile(SHADER_TYPE type)
 {
 	switch (type)
 	{
-		case SHADER_VERTEX: return "vs_5_0";
-		case SHADER_GEOMETRY: return "gs_5_0";
-		case SHADER_FRAGMENT: return "ps_5_0";
+		case SHADER_TYPE::SHADER_VERTEX: return "vs_5_0";
+		case SHADER_TYPE::SHADER_GEOMETRY: return "gs_5_0";
+		case SHADER_TYPE::SHADER_FRAGMENT: return "ps_5_0";
 	}
 	return nullptr;
 }
 
-const char *get_main_function(int type)
+const char *get_main_function(SHADER_TYPE type)
 {
 	switch (type)
 	{
-		case SHADER_VERTEX: return "mainVS";
-		case SHADER_GEOMETRY: return "mainGS";
-		case SHADER_FRAGMENT: return "mainFS";
+		case SHADER_TYPE::SHADER_VERTEX: return "mainVS";
+		case SHADER_TYPE::SHADER_GEOMETRY: return "mainGS";
+		case SHADER_TYPE::SHADER_FRAGMENT: return "mainFS";
 	}
 	return nullptr;
 }

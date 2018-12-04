@@ -8,14 +8,17 @@ class GLShader : public ICoreShader
 	GLuint _geomID = 0u;
 	GLuint _fragID = 0u;
 
+	// all buffers need to bind for work with shader
+	// slot -> index of UBO in UBOpool array
+	std::vector<size_t> _bufferIndicies; 
+
 	struct Parameter
 	{
-		int bufferIndex = -1;
-		int parameterIndex = -1;
+		int bufferIndex = -1; // index of UBO in UBOpool
+		int parameterIndex = -1; // index in UBO::parameters
 	};
-
-	std::unordered_map<string, Parameter> _parameters; // map for fast access to UBO variables
-	std::vector<size_t> _bufferIndicies; // slot -> index of UBO in allUBO array  
+	std::unordered_map<string, Parameter> _parameters; // all shader parameters
+	
 
 	void set_parameter(const char *name, const void *data);
 

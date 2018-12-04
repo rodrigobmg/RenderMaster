@@ -10,7 +10,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-vector<UBO> allUBO;
+vector<UBO> UBOpool;
 
 GLMesh *getGLMesh(IMesh *mesh)
 {
@@ -363,7 +363,7 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 
 API GLCoreRender::Free()
 {
-	allUBO.clear();
+	UBOpool.clear();
 
 	wglMakeCurrent(nullptr, nullptr);
 	wglDeleteContext(_hRC);

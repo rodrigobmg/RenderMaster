@@ -7,7 +7,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-extern vector<UBO> allUBO;
+extern vector<UBO> UBOpool;
 
 GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID) :
 	_programID(programID), _vertID(vertID), _geomID(geomID), _fragID(fragID)
@@ -104,25 +104,25 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		// find existing buffer with same memory layout
 		int indexFound = -1;
 		{
-			for (int j = 0; indexFound == -1 && j < allUBO.size(); j++)
+			for (int j = 0; indexFound == -1 && j < UBOpool.size(); j++)
 			{
 				bool isEqual = true;
 
-				if (allUBO[j].name != nameUBO)
+				if (UBOpool[j].name != nameUBO)
 					isEqual = false;
 
-				if (allUBO[j].bytes != bytesUBO)
+				if (UBOpool[j].bytes != bytesUBO)
 					isEqual = false;
 
-				if (allUBO[j].parameters.size() != parametersUBO.size())
+				if (UBOpool[j].parameters.size() != parametersUBO.size())
 					isEqual = false;
 
 				for (int k = 0; isEqual && k < parametersUBO.size(); k++)
 				{
-					if (allUBO[j].parameters[k].name != parametersUBO[k].name ||
-						allUBO[j].parameters[k].bytes != parametersUBO[k].bytes ||
-						allUBO[j].parameters[k].offset != parametersUBO[k].offset ||
-						allUBO[j].parameters[k].elements != parametersUBO[k].elements)
+					if (UBOpool[j].parameters[k].name != parametersUBO[k].name ||
+						UBOpool[j].parameters[k].bytes != parametersUBO[k].bytes ||
+						UBOpool[j].parameters[k].offset != parametersUBO[k].offset ||
+						UBOpool[j].parameters[k].elements != parametersUBO[k].elements)
 					{
 						isEqual = 0;
 					}
@@ -143,14 +143,14 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			glBufferData(GL_UNIFORM_BUFFER, bytesUBO, &data[0], GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			_bufferIndicies.push_back(allUBO.size());
+			_bufferIndicies.push_back(UBOpool.size());
 
 			for (int i = 0; i < parametersUBO.size(); i++)
 			{
-				_parameters[parametersUBO[i].name] = {(int)allUBO.size(), (int)i};
+				_parameters[parametersUBO[i].name] = {(int)UBOpool.size(), (int)i};
 			}
 
-			allUBO.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
+			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
 			
 		} else
 		{
@@ -186,7 +186,7 @@ void GLShader::set_parameter(const char *name, const void *data)
 	if (p.bufferIndex < 0 || p.parameterIndex < 0)
 		return;
 
-	UBO &ubo = allUBO[p.bufferIndex];
+	UBO &ubo = UBOpool[p.bufferIndex];
 	UBO::UBOParameter &pUBO = ubo.parameters[p.parameterIndex];
 	uint8 *pointer = ubo.data.get() + pUBO.offset;
 	if (memcmp(pointer, data, pUBO.bytes))
@@ -201,7 +201,7 @@ void GLShader::bind()
 	glUseProgram(_programID);
 	for (int i = 0; i < _bufferIndicies.size(); i++)
 	{
-		UBO &ubo = allUBO[_bufferIndicies[i]];
+		UBO &ubo = UBOpool[_bufferIndicies[i]];
 		glBindBufferBase(GL_UNIFORM_BUFFER, i, ubo._ID);
 		glUniformBlockBinding(_programID, i, i);
 	}
@@ -235,7 +235,7 @@ API GLShader::FlushParameters()
 {
 	for (auto& idx : _bufferIndicies)
 	{
-		UBO &ubo = allUBO[idx];
+		UBO &ubo = UBOpool[idx];
 		if (ubo.needFlush)
 		{
 			glNamedBufferSubData(ubo._ID, 0, ubo.bytes, ubo.data.get());

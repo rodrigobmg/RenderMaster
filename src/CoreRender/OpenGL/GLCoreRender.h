@@ -11,7 +11,7 @@ struct UBO
 		string name;
 		uint offset = 0;
 		uint bytes = 0;
-		uint elements = 0; // number of elements in array
+		uint elements = 1; // number of elements in array (if parameter is array)
 	};
 	vector<UBOParameter> parameters;
 
