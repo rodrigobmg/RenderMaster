@@ -9,6 +9,13 @@ DEFINE_LOG_HELPERS(_pCore)
 
 extern vector<ConstantBuffer> ConstantBufferPool;
 
+ID3D11DeviceContext* getContext(Core *core)
+{
+	ICoreRender *coreRender = getCoreRender(_pCore);
+	DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
+	return dxRender->getContext();
+}
+
 void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 {
 	switch (type)
@@ -95,13 +102,12 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 		}
 
 		vector<size_t> *_b;
-		std::unordered_map<string, SubShader::Parameter> *_p;
 
 		switch (type)
 		{
-			case SHADER_TYPE::SHADER_VERTEX:	_b = &v._bufferIndicies; _p = &v._parameters; break;
-			case SHADER_TYPE::SHADER_GEOMETRY:	_b = &g._bufferIndicies; _p = &g._parameters; break;
-			case SHADER_TYPE::SHADER_FRAGMENT:	_b = &f._bufferIndicies; _p = &f._parameters; break;
+			case SHADER_TYPE::SHADER_VERTEX:	_b = &v._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_GEOMETRY:	_b = &g._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_FRAGMENT:	_b = &f._bufferIndicies; break;
 		};
 
 		if (indexFound != -1) // buffer found
@@ -110,7 +116,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 
 			for (int i = 0; i < cbParameters.size(); i++)
 			{
-				(*_p)[cbParameters[i].name] = {(int)indexFound, (int)i};
+				_parameters[cbParameters[i].name] = {(int)indexFound, (int)i};
 			}
 		} else // not found => create new
 		{
@@ -130,14 +136,13 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 
 			ICoreRender *coreRender = getCoreRender(_pCore);
 			DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
-
 			auto hr = dxRender->getDevice()->CreateBuffer(&bd, nullptr, dxBuffer.GetAddressOf());		
 
 			_b->push_back(ConstantBufferPool.size());
 
 			for (int k = 0; k < cbParameters.size(); k++)
 			{
-				(*_p)[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
+				_parameters[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
 			}
 
 			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));			
@@ -161,37 +166,106 @@ DX11Shader::~DX11Shader()
 	if (g.pointer.pGeometry)	{ g.pointer.pGeometry->Release();	g.pointer.pGeometry = nullptr; }
 }
 
-void DX11Shader::bind(ID3D11DeviceContext *ctx)
+void DX11Shader::bind()
 {
+	ID3D11DeviceContext *ctx = getContext(_pCore);
+
 	ctx->VSSetShader(vs(), nullptr, 0);
 	ctx->PSSetShader(fs(), nullptr, 0);
 
 	if (gs())
 		ctx->GSSetShader(gs(), nullptr, 0);
+
+	ID3D11Buffer *pointers[128];
+
+	#define BUND_CONSTANT_BUFFERS(PREFIX, IDX_VEC) \
+		{ \
+			for (size_t i = 0; i < IDX_VEC.size(); i++) \
+			{ \
+				ConstantBuffer& cb = ConstantBufferPool[IDX_VEC[i]]; \
+				pointers[i] = cb.dxBuffer.Get(); \
+			} \
+			ctx->PREFIX##SetConstantBuffers(0, (uint)IDX_VEC.size(), pointers); \
+		}
+	
+	BUND_CONSTANT_BUFFERS(VS, v._bufferIndicies)
+	BUND_CONSTANT_BUFFERS(PS, f._bufferIndicies)
+
+	if (gs())
+	BUND_CONSTANT_BUFFERS(GS, g._bufferIndicies)
 }
 
-API DX11Shader::SetFloatParameter(const char * name, float value)
+void DX11Shader::setParameter(const char *name, const void *data)
 {
+	auto it = _parameters.find(name);
+	if (it == _parameters.end())
+	{
+		auto &p = _parameters[name];
+		LOG_WARNING_FORMATTED("DX11Shader::setParameter() unable find parameter \"%s\"", name);
+	}
+
+	Parameter &p = _parameters[name];
+
+	if (p.bufferIndex < 0 || p.parameterIndex < 0)
+		return;
+
+	ConstantBuffer &cb = ConstantBufferPool[p.bufferIndex];
+	ConstantBuffer::ConstantBufferParameter &pCB = cb.parameters[p.parameterIndex];
+	uint8 *pointer = cb.data.get() + pCB.offset;
+	if (memcmp(pointer, data, pCB.bytes))
+	{
+		memcpy(pointer, data, pCB.bytes);
+		cb.needFlush = true;
+	}
+}
+
+API DX11Shader::SetFloatParameter(const char *name, float value)
+{
+	setParameter(name, &value);
 	return S_OK;
 }
 
-API DX11Shader::SetVec4Parameter(const char * name, const vec4 * value)
+API DX11Shader::SetVec4Parameter(const char *name, const vec4 *value)
 {
+	setParameter(name, value);
 	return S_OK;
 }
 
-API DX11Shader::SetMat4Parameter(const char * name, const mat4 * value)
+API DX11Shader::SetMat4Parameter(const char *name, const mat4 *value)
 {
+	setParameter(name, value);
 	return S_OK;
 }
 
-API DX11Shader::SetUintParameter(const char * name, uint value)
+API DX11Shader::SetUintParameter(const char *name, uint value)
 {
+	setParameter(name, &value);
 	return S_OK;
 }
 
 API DX11Shader::FlushParameters()
 {
+	ID3D11DeviceContext *ctx = getContext(_pCore);
+
+	auto updateBuffers = [ctx](vector<size_t>& indicies)
+	{
+		for (size_t &idx : indicies)
+		{
+			ConstantBuffer& cb = ConstantBufferPool[idx];
+			if (cb.needFlush)
+			{
+				ctx->UpdateSubresource(cb.dxBuffer.Get(), 0, nullptr, cb.data.get(), 0, 0);
+				cb.needFlush = false;
+			}
+		}
+	};
+
+	updateBuffers(v._bufferIndicies);
+	updateBuffers(f._bufferIndicies);
+
+	if (gs())
+		updateBuffers(g._bufferIndicies);
+
 	return S_OK;
 }
 

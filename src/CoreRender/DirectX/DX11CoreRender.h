@@ -152,7 +152,8 @@ class DX11CoreRender final : public ICoreRender
 	
 public:
 
-	WRL::ComPtr<ID3D11Device> getDevice() { return _device; }
+	ID3D11Device* getDevice() { return _device.Get(); }
+	ID3D11DeviceContext* getContext() { return _context.Get(); }
 
 	DX11CoreRender();
 	virtual ~DX11CoreRender();

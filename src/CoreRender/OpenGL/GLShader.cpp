@@ -171,13 +171,13 @@ GLShader::~GLShader()
 	if (_programID != 0) { glDeleteProgram(_programID); _programID = 0; }
 }
 
-void GLShader::set_parameter(const char *name, const void *data)
+void GLShader::setParameter(const char *name, const void *data)
 {
 	auto it = _parameters.find(name);
 	if (it == _parameters.end())
 	{
 		auto &p = _parameters[name];
-		LOG_WARNING_FORMATTED("GLShader::set_parameter() unable find parameter \"%s\"", name);
+		LOG_WARNING_FORMATTED("GLShader::setParameter() unable find parameter \"%s\"", name);
 	}
 
 	Parameter &p = _parameters[name];
@@ -208,25 +208,25 @@ void GLShader::bind()
 
 API GLShader::SetFloatParameter(const char *name, float value)
 {
-	set_parameter(name, &value);
+	setParameter(name, &value);
 	return S_OK;
 }
 
 API GLShader::SetVec4Parameter(const char *name, const vec4 *value)
 {
-	set_parameter(name, value);
+	setParameter(name, value);
 	return S_OK;
 }
 
 API GLShader::SetMat4Parameter(const char *name, const mat4 *value)
 {
-	set_parameter(name, value);
+	setParameter(name, value);
 	return S_OK;
 }
 
 API GLShader::SetUintParameter(const char *name, uint value)
 {
-	set_parameter(name, &value);
+	setParameter(name, &value);
 	return S_OK;
 }
 

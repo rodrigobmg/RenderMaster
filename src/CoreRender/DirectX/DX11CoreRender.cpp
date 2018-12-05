@@ -745,7 +745,7 @@ API DX11CoreRender::SetShader(IShader* pShader)
 
 	DX11Shader *dxShader = getDX11Shader(pShader);
 
-	dxShader->bind(_context.Get());
+	dxShader->bind();
 
 	return S_OK;
 }

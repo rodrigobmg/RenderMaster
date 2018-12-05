@@ -20,7 +20,7 @@ class GLShader : public ICoreShader
 	std::unordered_map<string, Parameter> _parameters; // all shader parameters
 	
 
-	void set_parameter(const char *name, const void *data);
+	void setParameter(const char *name, const void *data);
 
 public:
 
