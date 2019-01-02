@@ -8,6 +8,8 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+const static int64_t PerFrameTextures = 1000;
+
 /////////////////////////
 // Render
 /////////////////////////
@@ -53,8 +55,12 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 	//_pCoreRender->PopStates();
 }
 
-void Render::RenderFrame(const ICamera *pCamera, uint64_t windowID, const FrameMode *mode)
+void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMode *mode)
 {
+	winID = windowID;
+	if (winID > std::numeric_limits<int64_t>::max() - PerFrameTextures)
+		winID /= 2;
+
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
 	float aspect = (float)w / h;

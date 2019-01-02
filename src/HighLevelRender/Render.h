@@ -60,17 +60,14 @@ class Render : public IRender
 	// Frame data
 	mat4 ViewMat;
 	mat4 ViewProjMat;
+	int64_t winID{};
 
 	void renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes);
 	void renderEnginePost(RenderBuffers& buffers);
-
 	void setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader);
 	void setShaderPostParameters(RENDER_PASS pass, IShader *shader);
-
 	void drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass);
-
-	void _update();
-	
+	void _update();	
 	IShader* getShader(const ShaderRequirement &req);
 	bool isOpenGL();
 	void getRenderMeshes(vector<RenderMesh>& meshes);	
@@ -86,7 +83,7 @@ public:
 
 	void Init();
 	void Free();
-	void RenderFrame(const ICamera *pCamera, uint64_t windowID, const FrameMode *mode);
+	void RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMode *mode);
 
 	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;

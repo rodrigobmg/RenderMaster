@@ -142,7 +142,7 @@ API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera,
 #endif // WIN32
 	
 	_pCoreRender->SetViewport(w, h);
-	_pRender->RenderFrame(pCamera, (uint64_t)extern_handle, mode);
+	_pRender->RenderFrame(pCamera, (int64_t)extern_handle, mode);
 
 	return S_OK;
 }
