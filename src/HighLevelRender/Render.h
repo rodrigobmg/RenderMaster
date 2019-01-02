@@ -59,7 +59,7 @@ class Render : public IRender
 
 	// Frame data
 	mat4 ViewMat;
-	mat4 ViewProjMat;
+	mat4 ProjMat;
 	int64_t winID{};
 
 	void renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes);

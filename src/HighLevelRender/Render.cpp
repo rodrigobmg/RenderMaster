@@ -65,7 +65,7 @@ void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMo
 	_pCoreRender->GetViewport(&w, &h);
 	float aspect = (float)w / h;
 
-	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+	const_cast<ICamera*>(pCamera)->GetProjectionMatrix(&ProjMat, aspect);
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 
 	vector<RenderMesh> meshes;
@@ -96,7 +96,7 @@ void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMo
 		{
 			_pCoreRender->Clear();
 
-			_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
+			_draw_meshes(ViewMat, ProjMat, meshes, RENDER_PASS::ID);
 		}
 
 		#if 0
@@ -139,8 +139,8 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	tex->GetHeight(&h);
 	float aspect = (float)w / h;
 
-	mat4 ViewProjMat;
-	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+	mat4 ProjMat;
+	const_cast<ICamera*>(pCamera)->GetProjectionMatrix(&ProjMat, aspect);
 
 	mat4 ViewMat;
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
@@ -329,7 +329,7 @@ void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader
 {
 	if (mesh)
 	{
-		mat4 MVP = ViewProjMat * mesh->modelMat;
+		mat4 MVP = ProjMat * ViewMat * mesh->modelMat;
 		shader->SetMat4Parameter("MVP", &MVP);
 
 		mat4 M = mesh->modelMat;
