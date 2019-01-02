@@ -199,5 +199,8 @@
     <None Include="..\src\LowLevelRender\DirectX\states_pools.inl">
       <Filter>LowLevelRender\DirectX</Filter>
     </None>
+    <None Include="..\src\Shaders\post\taa.shader">
+      <Filter>Shaders\post</Filter>
+    </None>
   </ItemGroup>
 </Project>

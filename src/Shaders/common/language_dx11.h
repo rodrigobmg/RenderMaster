@@ -35,7 +35,7 @@
 // Textures
 #define TEXTURE2D_IN(SLOT, NAME)\
 	Texture2D _texture_ ## SLOT : register(t ## SLOT); \
-	SamplerState _sampler_ ## SLOT :  register( s0 );
+	SamplerState _sampler_ ## SLOT :  register( s ## SLOT );
 #define TEXTURE(SLOT, UV) _texture_ ## SLOT.Sample(_sampler_ ## SLOT, UV)
 
 // Vertex in/out

@@ -29,6 +29,11 @@ const static vec2 TAASamples[16] =
 	vec2( 1.0f / 32.0f, 16.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f)
 };
 
+enum OLD_TEXTURE : int64_t
+{
+	OLD_COLOR = 0
+};
+
 
 /////////////////////////
 // Render
@@ -49,8 +54,6 @@ void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 
 void Render::renderEnginePost(RenderBuffers& buffers)
 {
-	//_pCoreRender->PushStates();
-
 	INPUT_ATTRUBUTE attribs;
 	_postPlane->GetAttributes(&attribs);
 
@@ -63,7 +66,7 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 	_pCoreRender->SetDepthTest(0);	
 
 	renderTarget->SetColorTexture(0, buffers.color.Get());
-	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 	{
 		_pCoreRender->Draw(_postPlane.Get());
 	}
@@ -71,8 +74,6 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 
 	_pCoreRender->UnbindAllTextures();
 	_pCoreRender->SetDepthTest(1);
-
-	//_pCoreRender->PopStates();
 }
 
 void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMode *mode)
@@ -116,53 +117,62 @@ void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMo
 	//
 	renderEnginePost(buffers);
 
-#if 0
-	///////////////////////////////
-	// ID pass
-	///////////////////////////////
+	// TAA
 	//
-	// Render all models ID (only for debug picking)
-	//
+	if (taa)
 	{
-		renderTarget->SetColorTexture(0, buffers.id.Get());
-		renderTarget->SetDepthTexture(buffers.depth.Get());
+		WRL::ComPtr<ITexture> old_color = getRenderTexture2DByID(w, h, TEXTURE_FORMAT::RGBA8, OLD_COLOR);
 
-		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+		if (old_color.Get())
 		{
-			_pCoreRender->Clear();
+			WRL::ComPtr<ITexture> taa_out = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA8);		
 
-			_draw_meshes(ViewMat, ProjMat, meshes, RENDER_PASS::ID);
-		}
+			INPUT_ATTRUBUTE attribs;
+			_postPlane->GetAttributes(&attribs);
 
-		#if 0
-			IInput *i;
-			_pCore->GetSubSystem((ISubSystem**)&i, SUBSYSTEM_TYPE::INPUT);
-			int pr;
-			i->IsMoisePressed(&pr, MOUSE_BUTTON::LEFT);
-			if (pr)
+			IShader *shader = getShader({attribs, RENDER_PASS::TAA});
+			_pCoreRender->SetShader(shader);
+			//setShaderPostParameters(RENDER_PASS::TAA, shader);
+
+			_pCoreRender->BindTexture(0, old_color.Get());
+			_pCoreRender->BindTexture(1, buffers.color.Get());
+
+			_pCoreRender->SetDepthTest(0);	
+
+			renderTarget->SetColorTexture(0, taa_out.Get());
+			_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 			{
-				uint curX, curY;
-				i->GetMousePos(&curX, &curY);
-
-				ICoreTexture *coreTex;
-				tex->GetCoreTexture(&coreTex);
-				uint data;
-				uint read;
-				_pCoreRender->ReadPixel2D(coreTex, &data, &read, curX, curY);
-				if (read > 0)
-				{
-					LOG_FORMATTED("Id = %i", data);
-				}
+				_pCoreRender->Draw(_postPlane.Get());
 			}
-		#endif
+			_pCoreRender->RestoreDefaultRenderTarget();
 
-		_pCoreRender->RestoreDefaultRenderTarget();
-		renderTarget->UnbindAll();
+			_pCoreRender->UnbindAllTextures();
+			_pCoreRender->SetDepthTest(1);
+
+			releaseTexture2d(buffers.color.Get());
+			buffers.color = taa_out;
+
+			// swap
+			swapTextures(taa_out.Get(), old_color.Get());
+			releaseTexture2d(old_color.Get());
+			releaseTexture2d(taa_out.Get());
+		}
 	}
-#endif
 
 	_pCoreRender->BlitRenderTargetToDefault(renderTarget.Get());
 	renderTarget->UnbindAll();
+
+	if (taa)
+	{
+		WRL::ComPtr<ITexture> old_color = getRenderTexture2DByID(w, h, TEXTURE_FORMAT::RGBA8, OLD_COLOR);
+
+		if (old_color.Get() == nullptr)
+		{
+			WRL::ComPtr<ITexture> old_color = createRenderTexture2DByID(w, h, TEXTURE_FORMAT::RGBA8, OLD_COLOR);
+			swapTextures(buffers.color.Get(), old_color.Get());
+			releaseTexture2d(old_color.Get());			
+		}
+	}
 
 	releaseBuffers(buffers);
 }
@@ -295,6 +305,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		{
 			case RENDER_PASS::ID: targetShader = _idShader; break;
 			case RENDER_PASS::FORWARD: targetShader = _forwardShader; break;
+			case RENDER_PASS::TAA: targetShader = _taaShader; break;
 			case RENDER_PASS::ENGINE_POST: targetShader = _postShader; break;
 		}
 
@@ -403,13 +414,17 @@ void Render::drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass)
 	}
 }
 
-ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format)
+ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format, int64_t id)
 {
 	for (TexturePoolable &tex : _texture_pool)
 	{
 		if (tex.free)
 		{
-			if (width == tex.width && height == tex.height && format == tex.format)
+			int id_equal = 1;
+			if (id != -1)
+				id_equal = tex.id == (id + winID);
+
+			if (width == tex.width && height == tex.height && format == tex.format && id_equal)
 			{
 				tex.free = 0;
 				tex.frame = _pCore->frame();
@@ -418,12 +433,15 @@ ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORM
 		}
 	}
 
+	if (id != -1)
+		return nullptr;
+
 	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
 
 	ITexture *tex;
 	_pResMan->CreateTexture(&tex, width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, WRL::ComPtr<ITexture>(tex)});
+	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, WRL::ComPtr<ITexture>(tex), -1});
 
 	return tex;
 }
@@ -442,13 +460,13 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 
 	ret.width = w;
 	ret.height = h;
-	ret.color = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA8);
-	ret.colorHDR = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA16F);
-	ret.depth = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::D24S8);
-	ret.directLight = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB16F);
-	ret.normal = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB8);
-	ret.shading = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB8);
-	ret.id = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::R32UI);
+	ret.color = getRenderTargetTexture2d(w, h,			TEXTURE_FORMAT::RGBA8);
+	ret.colorHDR = getRenderTargetTexture2d(w, h,		TEXTURE_FORMAT::RGBA16F);
+	ret.depth = getRenderTargetTexture2d(w, h,			TEXTURE_FORMAT::D24S8);
+	ret.directLight = getRenderTargetTexture2d(w, h,	TEXTURE_FORMAT::RGB16F);
+	ret.normal = getRenderTargetTexture2d(w, h,			TEXTURE_FORMAT::RGB8);
+	ret.shading = getRenderTargetTexture2d(w, h,		TEXTURE_FORMAT::RGB8);
+	ret.id = getRenderTargetTexture2d(w, h,				TEXTURE_FORMAT::R32UI);
 
 	return ret;
 }
@@ -458,17 +476,17 @@ void Render::releaseBuffers(RenderBuffers& buffers)
 	releaseTexture2d(buffers.color.Get());		buffers.color = nullptr;
 	releaseTexture2d(buffers.colorHDR.Get());	buffers.colorHDR = nullptr;
 	releaseTexture2d(buffers.depth.Get());		buffers.depth = nullptr;
-	releaseTexture2d(buffers.directLight.Get());	buffers.directLight = nullptr;
+	releaseTexture2d(buffers.directLight.Get());buffers.directLight = nullptr;
 	releaseTexture2d(buffers.normal.Get());		buffers.normal = nullptr;
-	releaseTexture2d(buffers.shading.Get());		buffers.shading = nullptr;
+	releaseTexture2d(buffers.shading.Get());	buffers.shading = nullptr;
 	releaseTexture2d(buffers.id.Get());			buffers.id = nullptr;
 }
 
 Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 {
-	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-	_pCore->GetSubSystem((ISubSystem**)&_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
+	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan,	SUBSYSTEM_TYPE::SCENE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_pResMan,	SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_fsystem,	SUBSYSTEM_TYPE::FILESYSTEM);
 }
 
 Render::~Render()
@@ -492,6 +510,9 @@ void Render::Init()
 
 	_pResMan->LoadTextFile(&shader, "post\\engine_post.shader");
 	_postShader =  WRL::ComPtr<ITextFile>(shader);
+
+	_pResMan->LoadTextFile(&shader, "post\\taa.shader");
+	_taaShader =  WRL::ComPtr<ITextFile>(shader);
 
 	// Render Targets
 	IRenderTarget *RT;
@@ -532,6 +553,7 @@ void Render::Free()
 	renderTarget.Reset();
 	_forwardShader.Reset();
 	_idShader.Reset();
+	_taaShader.Reset();
 	_texture_pool.clear();
 	_shaders_pool.clear();	
 }
@@ -541,6 +563,41 @@ API Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, T
 	ITexture *tex = getRenderTargetTexture2d(width, height, format);
 	*texOut = tex;
 	return S_OK;
+}
+
+ITexture* Render::getRenderTexture2DByID(uint width, uint height, TEXTURE_FORMAT format, int64_t id)
+{
+	return getRenderTargetTexture2d(width, height, format, id);
+}
+
+ITexture * Render::createRenderTexture2DByID(uint width, uint height, TEXTURE_FORMAT format, int64_t id)
+{
+	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
+
+	ITexture *tex;
+	_pResMan->CreateTexture(&tex, width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
+
+	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, WRL::ComPtr<ITexture>(tex), winID + id});
+
+	return tex;
+}
+
+void Render::swapTextures(ITexture * t1, ITexture * t2)
+{
+	TexturePoolable *tp1 = nullptr;
+	TexturePoolable *tp2 = nullptr;
+
+	for (TexturePoolable &tp : _texture_pool)
+	{
+		if (tp.tex.Get() == t1)
+			tp1 = &tp;
+		if (tp.tex.Get() == t2)
+			tp2 = &tp;
+		if (tp1 && tp2)
+			break;
+	}
+
+	std::swap(tp1->tex, tp2->tex);
 }
 
 API Render::ReleaseRenderTexture2D(ITexture *texIn)
@@ -553,6 +610,7 @@ API Render::ShadersReload()
 {
 	LOG("Shaders reloading...");
 	_idShader->Reload();
+	_taaShader->Reload();
 	_forwardShader->Reload();
 	_postShader->Reload();
 	_shaders_pool.clear();

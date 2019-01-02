@@ -33,6 +33,7 @@ class Render : public IRender
 	WRL::ComPtr<ITextFile> _forwardShader;
 	WRL::ComPtr<ITextFile> _postShader;
 	WRL::ComPtr<ITextFile> _idShader;	
+	WRL::ComPtr<ITextFile> _taaShader;	
 	WRL::ComPtr<IMesh> _postPlane;
 	WRL::ComPtr<IRenderTarget> renderTarget;
 
@@ -44,6 +45,7 @@ class Render : public IRender
 		uint height;
 		TEXTURE_FORMAT format;
 		WRL::ComPtr<ITexture> tex;
+		int64_t id{-1};
 	};
 	vector<TexturePoolable> _texture_pool;
 
@@ -72,7 +74,10 @@ class Render : public IRender
 	IShader* getShader(const ShaderRequirement &req);
 	bool isOpenGL();
 	void getRenderMeshes(vector<RenderMesh>& meshes);	
-	ITexture* getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format);
+	ITexture* getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format, int64_t id = -1);
+	ITexture* getRenderTexture2DByID(uint width, uint height, TEXTURE_FORMAT format, int64_t id);
+	ITexture* createRenderTexture2DByID(uint width, uint height, TEXTURE_FORMAT format, int64_t id);
+	void swapTextures(ITexture *t1, ITexture *t2);
 	void releaseTexture2d(ITexture *tex);
 	RenderBuffers initBuffers(uint w, uint h);
 	void releaseBuffers(RenderBuffers& buffers);

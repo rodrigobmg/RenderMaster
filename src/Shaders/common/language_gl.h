@@ -4,6 +4,7 @@
 
 // Math
 #define mul(M, V) M * V
+#define lerp mix
 
 #define STRUCT(NAME)
 #define END_STRUCT

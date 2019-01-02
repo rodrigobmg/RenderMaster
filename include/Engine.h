@@ -480,6 +480,7 @@ namespace RENDER_MASTER
 	{
 		FORWARD = 0,
 		ID,
+		TAA,
 		ENGINE_POST,
 		PASS_NUMBER
 	};
