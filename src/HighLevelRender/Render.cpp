@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-const static int64_t PerFrameTextures = 1000;
+const static int64_t MaxPoolTexturesPerFrame = 1000;
 
 /////////////////////////
 // Render
@@ -58,7 +58,7 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMode *mode)
 {
 	winID = windowID;
-	if (winID > std::numeric_limits<int64_t>::max() - PerFrameTextures)
+	if (winID > std::numeric_limits<int64_t>::max() - MaxPoolTexturesPerFrame)
 		winID /= 2;
 
 	uint w, h;
