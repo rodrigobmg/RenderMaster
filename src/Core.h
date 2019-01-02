@@ -36,19 +36,21 @@ class Core : public ICore
 
 	std::chrono::steady_clock::time_point start;
 
-	void _internal_update();
+	void internalUpdate();
 	void _update();
-	float update_fps();
-	void _main_loop();
-	void static _s_main_loop();
-	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
-	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
-	void _set_window_caption(int is_paused, int fps);
+	float updateFPS();
+	void mainLoop();
+	void static s_mainLoop();
+	void messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	static void s_messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	void setWindowCaption(int is_paused, int fps);
 
 	int windowActive = 1;	
 
 	int64_t _frame = 0;
 	float dt = 0.0f;
+
+	FrameMode defaultMode;
 
 public:
 
@@ -73,7 +75,7 @@ public:
 	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) override;
 	API Start() override;
 	API Update() override;
-	API RenderFrame(const WindowHandle* externHandle, const ICamera *pCamera) override;
+	API RenderFrame(const WindowHandle* externHandle, const ICamera *pCamera, const FrameMode *mode) override;
 	API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataDir(OUT const char **pStr) override;
 	API GetWorkingDir(OUT const char **pStr) override;

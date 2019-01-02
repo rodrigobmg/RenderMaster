@@ -14,8 +14,8 @@ class Input : public IInput
 
 	void update();
 	void clear_mouse();
-	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
-	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	void messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	static void s_messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 
 public:
 

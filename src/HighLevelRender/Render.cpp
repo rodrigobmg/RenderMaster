@@ -53,7 +53,7 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 	//_pCoreRender->PopStates();
 }
 
-void Render::RenderFrame(const ICamera *pCamera)
+void Render::RenderFrame(const ICamera *pCamera, uint64_t windowID, const FrameMode *mode)
 {
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);

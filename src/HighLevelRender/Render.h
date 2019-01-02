@@ -86,7 +86,7 @@ public:
 
 	void Init();
 	void Free();
-	void RenderFrame(const ICamera *pCamera);
+	void RenderFrame(const ICamera *pCamera, uint64_t windowID, const FrameMode *mode);
 
 	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;

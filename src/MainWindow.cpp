@@ -132,7 +132,7 @@ MainWindow *MainWindow::this_ptr{nullptr};
 MainWindow::MainWindow(void(*main_loop)())
 {
 	this_ptr = this;
-	_main_loop = main_loop;
+	mainLoop = main_loop;
 }
 
 MainWindow::~MainWindow()
@@ -368,7 +368,7 @@ void MainWindow::StartMainLoop()
 
 	while (true)
 	{
-		if (_main_loop != nullptr && !passive_main_loop)
+		if (mainLoop != nullptr && !passive_main_loop)
 		{
 
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -381,7 +381,7 @@ void MainWindow::StartMainLoop()
 			}
 			else
 			{
-				_main_loop();
+				mainLoop();
 			}
 		}
 		else

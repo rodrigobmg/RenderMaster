@@ -97,6 +97,17 @@ namespace RENDER_MASTER
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
+	enum RENDER_OUT
+	{
+		DEFAULT,
+		VELOCITY
+	};
+	struct FrameMode
+	{
+		RENDER_OUT out = RENDER_OUT::DEFAULT;
+	};
+
+
 	DEFINE_GUID(IID_Core, 0xa97b8eb3, 0x93ce, 0x4a45, 0x80, 0xd, 0x36, 0x70, 0x84, 0xcf, 0xb4, 0xb1);
 	class ICore : public IUnknown
 	{
@@ -106,7 +117,7 @@ namespace RENDER_MASTER
 		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
 		virtual API Start() = 0;
 		virtual API Update() = 0;
-		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
+		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera, const FrameMode *mode) = 0;
 		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataDir(OUT const char **pStr) = 0;
 		virtual API GetWorkingDir(OUT const char **pStr) = 0;
@@ -489,7 +500,6 @@ namespace RENDER_MASTER
 			return attributes == other.attributes && pass == other.pass;
 		}
 	};
-
 
 	class IRender : public ISubSystem
 	{

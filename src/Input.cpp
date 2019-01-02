@@ -26,7 +26,7 @@ void Input::update()
 	//LOG_FORMATTED("_cursorX=%i _cursorY=%i _mouseDeltaPos(%f, %f) _oldPos(%f, %f)", _cursorX, _cursorY, _mouseDeltaPos.x, _mouseDeltaPos.y, _oldPos.x, _oldPos.y);
 }
 
-void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData)
+void Input::messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData)
 {
 	switch (type)
 	{
@@ -70,9 +70,9 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 	}
 }
 
-void Input::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void * pData)
+void Input::s_messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void * pData)
 {
-	instance->_message_callback(type, param1, param2, pData);
+	instance->messageCallback(type, param1, param2, pData);
 }
 
 void Input::clear_mouse()
@@ -88,7 +88,7 @@ Input::Input()
 	instance = this;
 
 	if (_pCore->mainWindow())
-		_pCore->mainWindow()->AddMessageCallback(_s_message_callback);
+		_pCore->mainWindow()->AddMessageCallback(s_messageCallback);
 
 	_pCore->AddUpdateCallback(std::bind(&Input::update, this));
 }

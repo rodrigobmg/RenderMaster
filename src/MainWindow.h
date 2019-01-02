@@ -5,7 +5,7 @@ class MainWindow
 {
 	static MainWindow *this_ptr;
 	HWND hwnd;
-	void(*_main_loop)() {nullptr};
+	void(*mainLoop)() {nullptr};
 	vector<WindowMessageCallback> _window_mesage_callbacks;
 	int passive_main_loop = 0;
 

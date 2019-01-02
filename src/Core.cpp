@@ -63,8 +63,8 @@ API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* ext
 	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
 	if (createWindow)
 	{
-		_pMainWindow = std::make_unique<MainWindow>(_s_main_loop);
-		_pMainWindow->AddMessageCallback(_s_message_callback);
+		_pMainWindow = std::make_unique<MainWindow>(s_mainLoop);
+		_pMainWindow->AddMessageCallback(s_messageCallback);
 		_pMainWindow->CreateAndShow();
 	}
 
@@ -124,11 +124,11 @@ API Core::Start()
 
 API Core::Update()
 {
-	_internal_update();
+	internalUpdate();
 	return S_OK;
 }
 
-API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
+API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera, const FrameMode *mode)
 {
 	_pCoreRender->MakeCurrent(extern_handle);
 
@@ -142,7 +142,7 @@ API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
 #endif // WIN32
 	
 	_pCoreRender->SetViewport(w, h);
-	_pRender->RenderFrame(pCamera);
+	_pRender->RenderFrame(pCamera, (uint64_t)extern_handle, mode);
 
 	return S_OK;
 }
@@ -166,23 +166,23 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 	return S_OK;
 }
 
-void Core::_main_loop()
+void Core::mainLoop()
 {
-	_internal_update();
+	internalUpdate();
 
 	ICamera *cam;
 	_pSceneManager->GetDefaultCamera(&cam);
 
-	_pRender->RenderFrame(cam);
+	_pRender->RenderFrame(cam, 0, &defaultMode);
 	_pCoreRender->SwapBuffers();
 }
 
-void Core::_s_main_loop()
+void Core::s_mainLoop()
 {
-	_pCore->_main_loop();
+	_pCore->mainLoop();
 }
 
-void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+void Core::messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
 {
 	switch (type)
 	{
@@ -207,7 +207,7 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_REDRAW:
-		_main_loop();
+		mainLoop();
 		break;
 
 	case WINDOW_MESSAGE::APPLICATION_ACTIVATED:
@@ -220,7 +220,7 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 	case WINDOW_MESSAGE::APPLICATION_DEACTIVATED:
 		if (_pMainWindow)
 		{
-			_set_window_caption(1, 0);
+			setWindowCaption(1, 0);
 			_pMainWindow->SetPassiveMainLoop(1);
 		}
 		break;
@@ -235,12 +235,12 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 	}
 }
 
-void Core::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+void Core::s_messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
 {
-	_pCore->_message_callback(type, param1, param2, pData);
+	_pCore->messageCallback(type, param1, param2, pData);
 }
 
-void Core::_set_window_caption(int is_paused, int fps)
+void Core::setWindowCaption(int is_paused, int fps)
 {
 	if (!_pMainWindow)
 		return;
@@ -325,9 +325,9 @@ API Core::ReleaseEngine()
 	return S_OK;
 }
 
-void Core::_internal_update()
+void Core::internalUpdate()
 {
-	update_fps();
+	updateFPS();
 
 	for (auto &callback : _updateCallbacks)
 		callback();
@@ -353,7 +353,7 @@ void Core::_update()
 	}
 }
 
-float Core::update_fps()
+float Core::updateFPS()
 {
 	static const float upd_interv = 0.3f;
 	static float accum = 0.0f;
@@ -367,7 +367,7 @@ float Core::update_fps()
 	{
 		accum = 0.0f;
 		int fps = static_cast<int>(1.0f / dt);
-		_set_window_caption(0, fps);		
+		setWindowCaption(0, fps);		
 	}
 
 	start = std::chrono::steady_clock::now();
