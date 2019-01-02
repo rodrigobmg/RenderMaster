@@ -7,16 +7,15 @@ struct RenderBuffers
 	uint width;
 
 	WRL::ComPtr<ITexture> color;		// RGBA8	- Result tonemaped frame
-
 	WRL::ComPtr<ITexture> colorHDR;		// RGBA16F	- HDR frame
 	WRL::ComPtr<ITexture> depth;		// D24S8	- Hardware depth
-
-	WRL::ComPtr<ITexture> directLight;	// RGB16F	- Accumulation texture for all lights	
 
 	// GBuffer
 	WRL::ComPtr<ITexture> normal;		// RGB8		- World space normal
 	WRL::ComPtr<ITexture> shading;		// RGB8		- ?
+	//
 
+	WRL::ComPtr<ITexture> directLight;	// RGB16F	- Accumulation texture for all lights
 	WRL::ComPtr<ITexture> id;			// R32UI	- Models id
 };
 
@@ -46,7 +45,9 @@ class Render : public IRender
 		TEXTURE_FORMAT format;
 		WRL::ComPtr<ITexture> tex;
 	};
-	vector<TexturePoolable> _texture_pool;		
+	vector<TexturePoolable> _texture_pool;
+
+	bool taa = true;
 
 	std::unordered_map<ShaderRequirement, WRL::ComPtr<IShader>, ShaderRequirement> _shaders_pool;
 	

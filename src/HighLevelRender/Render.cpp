@@ -86,19 +86,21 @@ void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMo
 	float aspect = (float)w / h;
 
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
-
 	const_cast<ICamera*>(pCamera)->GetProjectionMatrix(&ProjMat, aspect);
 
-	vec2 TAAOffset = TAASamples[_pCore->frame() % 16];
+	if (taa)
+	{
+		vec2 TAAOffset = TAASamples[_pCore->frame() % 16];
 
-	if (ProjMat.el_2D[3][2] == 0.0f) // ortho
-	{
-		ProjMat.el_2D[0][3] += TAAOffset.x / (float)w;
-		ProjMat.el_2D[1][3] += TAAOffset.y / (float)h;
-	} else
-	{
-		ProjMat.el_2D[0][2] += TAAOffset.x / (float)w;
-		ProjMat.el_2D[1][2] += TAAOffset.y / (float)h;
+		if (ProjMat.el_2D[3][2] == 0.0f) // ortho
+		{
+			ProjMat.el_2D[0][3] += TAAOffset.x / (float)w;
+			ProjMat.el_2D[1][3] += TAAOffset.y / (float)h;
+		} else
+		{
+			ProjMat.el_2D[0][2] += TAAOffset.x / (float)w;
+			ProjMat.el_2D[1][2] += TAAOffset.y / (float)h;
+		}
 	}
 
 	vector<RenderMesh> meshes;
