@@ -9,6 +9,26 @@ DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
 const static int64_t MaxPoolTexturesPerFrame = 1000;
+const static vec2 TAASamples[16] =
+{
+	vec2( 1.0f /  2.0f,  1.0f /  3.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 1.0f /  4.0f,  2.0f /  3.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 3.0f /  4.0f,  1.0f /  9.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 1.0f /  8.0f,  4.0f /  9.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 5.0f /  8.0f,  7.0f /  9.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 3.0f /  8.0f,  2.0f /  9.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 7.0f /  8.0f,  5.0f /  9.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 1.0f / 16.0f,  8.0f /  9.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 9.0f / 16.0f,  1.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 5.0f / 16.0f, 10.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2(13.0f / 16.0f, 19.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 3.0f / 16.0f,  4.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2(11.0f / 16.0f, 13.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 7.0f / 16.0f, 22.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2(15.0f / 16.0f,  7.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f),
+	vec2( 1.0f / 32.0f, 16.0f / 27.0f) * 2.0f - vec2(1.0f, 1.0f)
+};
+
 
 /////////////////////////
 // Render
@@ -65,8 +85,21 @@ void Render::RenderFrame(const ICamera *pCamera, int64_t windowID, const FrameMo
 	_pCoreRender->GetViewport(&w, &h);
 	float aspect = (float)w / h;
 
-	const_cast<ICamera*>(pCamera)->GetProjectionMatrix(&ProjMat, aspect);
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
+
+	const_cast<ICamera*>(pCamera)->GetProjectionMatrix(&ProjMat, aspect);
+
+	vec2 TAAOffset = TAASamples[_pCore->frame() % 16];
+
+	if (ProjMat.el_2D[3][2] == 0.0f) // ortho
+	{
+		ProjMat.el_2D[0][3] += TAAOffset.x / (float)w;
+		ProjMat.el_2D[1][3] += TAAOffset.y / (float)h;
+	} else
+	{
+		ProjMat.el_2D[0][2] += TAAOffset.x / (float)w;
+		ProjMat.el_2D[1][2] += TAAOffset.y / (float)h;
+	}
 
 	vector<RenderMesh> meshes;
 	getRenderMeshes(meshes);
