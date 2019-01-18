@@ -49,7 +49,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 				registerIndex = ibdesc.BindPoint;
 		}
 
-		vector<ConstantBuffer::ConstantBufferParameter> cbParameters;
+		vector<ConstantBuffer::Parameter> cbParameters;
 
 		// each parameters
 		for (uint j = 0; j < bufferDesc.Variables; j++)
@@ -60,7 +60,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 
 			uint bytesVariable = varDesc.Size;
 
-			ConstantBuffer::ConstantBufferParameter p;
+			ConstantBuffer::Parameter p;
 			p.name = varDesc.Name;
 			p.bytes = varDesc.Size;
 			p.offset = varDesc.StartOffset;
@@ -209,7 +209,7 @@ void DX11Shader::setParameter(const char *name, const void *data)
 		return;
 
 	ConstantBuffer &cb = ConstantBufferPool[p.bufferIndex];
-	ConstantBuffer::ConstantBufferParameter &pCB = cb.parameters[p.parameterIndex];
+	ConstantBuffer::Parameter &pCB = cb.parameters[p.parameterIndex];
 	uint8 *pointer = cb.data.get() + pCB.offset;
 	if (memcmp(pointer, data, pCB.bytes))
 	{

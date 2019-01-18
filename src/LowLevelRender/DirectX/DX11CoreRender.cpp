@@ -11,6 +11,10 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+const static float MIN_DEPTH = 0.0f;
+const static float MAX_DEPTH = 1.0f;
+static D3D11_VIEWPORT dxViewport;
+
 vector<ConstantBuffer> ConstantBufferPool;
 
 // By default in DirectX (and OpenGL) CPU-GPU transfer implemented in column-major style.
@@ -197,15 +201,15 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	create_default_buffers(width, height);
 
 	// Viewport state
-	//
-	D3D11_VIEWPORT vp;
-	vp.Width = (FLOAT)width;
-	vp.Height = (FLOAT)height;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
-	_context->RSSetViewports(1, &vp);
+	dxViewport.Width = (FLOAT)width;
+	dxViewport.Height = (FLOAT)height;
+	dxViewport.TopLeftX = 0;
+	dxViewport.TopLeftY = 0;
+	dxViewport.MinDepth = MIN_DEPTH;
+	dxViewport.MaxDepth = MAX_DEPTH;
+	_context->RSSetViewports(1, &dxViewport);
+	_state.x = _state.y = 0;
+	_state.width = width; _state.heigth = height;
 
 	// Rasterizer state
 	_state.rasterState = _rasterizerStatePool.FetchDefaultState();
@@ -434,7 +438,6 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 		return err;
 	}
 
-
 	ID3D11GeometryShader *gs = nullptr;
 	ComPtr<ID3DBlob> gb;
 	if (geomText)
@@ -458,7 +461,7 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText
 	return S_OK;
 }
 
-DXGI_FORMAT resource_format(TEXTURE_FORMAT format)
+DXGI_FORMAT EngToDX11Format(TEXTURE_FORMAT format)
 {
 	switch (format)
 	{
@@ -482,44 +485,44 @@ DXGI_FORMAT resource_format(TEXTURE_FORMAT format)
 	return DXGI_FORMAT_UNKNOWN;
 }
 
-DXGI_FORMAT srv_format(TEXTURE_FORMAT format)
+DXGI_FORMAT EngToDX11SRV(TEXTURE_FORMAT format)
 {
 	switch (format)
 	{
-	case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
-	case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
-	case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
-	case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
-	case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
-	case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
-	case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
-	case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
-	case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
-	case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
-	case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
-	case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
-	case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
-	case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
+		case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
+		case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
+		case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
+		case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
+		case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
+		case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
+		case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
+		case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
+		case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
+		case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
+		case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	}
 
 	LOG_WARNING("eng_to_d3d11_format(): unknown format\n");
 	return DXGI_FORMAT_UNKNOWN;
 }
 
-DXGI_FORMAT dsv_format(TEXTURE_FORMAT format)
+DXGI_FORMAT EngToDSVFormat(TEXTURE_FORMAT format)
 {
 	switch (format)
 	{
-	case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_D24_UNORM_S8_UINT;
+		case TEXTURE_FORMAT::D24S8: return DXGI_FORMAT_D24_UNORM_S8_UINT;
 	}
 
 	LOG_WARNING("dsv_format(): unknown format\n");
 	return DXGI_FORMAT_UNKNOWN;
 }
 
-UINT bind_flags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
+UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 {
-	UINT bind_flags = D3D11_BIND_SHADER_RESOURCE;
+	UINT bindFlags_ = D3D11_BIND_SHADER_RESOURCE;
 
 	//if (isColorFormat(format))
 	//	bind_flags = D3D11_BIND_SHADER_RESOURCE;
@@ -527,12 +530,11 @@ UINT bind_flags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
 	{
 		if (isColorFormat(format))
-			bind_flags |= D3D11_BIND_RENDER_TARGET;
+			bindFlags_ |= D3D11_BIND_RENDER_TARGET;
 		else
-			bind_flags |= D3D11_BIND_DEPTH_STENCIL;
+			bindFlags_ |= D3D11_BIND_DEPTH_STENCIL;
 	}
-
-	return bind_flags;
+	return bindFlags_;
 }
 
 API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
@@ -542,11 +544,11 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 	texture_desc.Height = height;
 	texture_desc.MipLevels = 1;
 	texture_desc.ArraySize = 1;
-	texture_desc.Format = resource_format(format);
+	texture_desc.Format = EngToDX11Format(format);
 	texture_desc.SampleDesc.Count = 1; // TODO: MSAA textures
 	texture_desc.SampleDesc.Quality = 0;
 	texture_desc.Usage = D3D11_USAGE_DEFAULT;
-	texture_desc.BindFlags = bind_flags(flags, format);
+	texture_desc.BindFlags = bindFlags(flags, format);
 	texture_desc.CPUAccessFlags = 0;
 	texture_desc.MiscFlags = 0;
 
@@ -577,25 +579,24 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 			numBytes = rowBytes * height;
 		}
 
-
 		assert(rowBytes < std::numeric_limits<UINT>::max());
 		assert(numBytes < std::numeric_limits<UINT>::max());
 
 		_context->UpdateSubresource(tex, 0, nullptr, pData, static_cast<UINT>(rowBytes), static_cast<UINT>(numBytes));
 	}
 
-	// Create the sample
+	// Create the sampler
 	// TODO: create sampler from flags
 	ID3D11SamplerState* sampler = nullptr;
 	D3D11_SAMPLER_DESC sampDesc{};
-    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    sampDesc.MinLOD = 0;
-    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    if(FAILED(_device->CreateSamplerState(&sampDesc, &sampler)))
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	if(FAILED(_device->CreateSamplerState(&sampDesc, &sampler)))
 	{
 		tex->Release();
 		LOG_FATAL("DX11CoreRender::CreateTexture(): can't create sampler\n");
@@ -606,7 +607,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 	// Shader Resource View
 	ID3D11ShaderResourceView *srv = nullptr;
 	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc;
-	shader_resource_view_desc.Format = srv_format(format);
+	shader_resource_view_desc.Format = EngToDX11SRV(format);
 	shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shader_resource_view_desc.TextureCube.MostDetailedMip = 0;
 	shader_resource_view_desc.TextureCube.MipLevels = texture_desc.MipLevels;
@@ -644,7 +645,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		{
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
 			dsv_desc.Flags = 0;
-			dsv_desc.Format = dsv_format(format);
+			dsv_desc.Format = EngToDSVFormat(format);
 			dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			dsv_desc.Texture2D.MipSlice = 0;
 
@@ -692,7 +693,55 @@ API DX11CoreRender::PopStates()
 		_context->OMSetBlendState(state.blendState.Get(), nullptr, 0xffffffff);
 
 	if (!depthStenciEq.operator()(state.depthStencilDesc, _state.depthStencilDesc))
-		_context->OMSetDepthStencilState(state.depthStencilState.Get(), 0);
+		_context->OMSetDepthStencilState(state.depthStencilState.Get(), 0);	
+
+	SetMesh(state.mesh.Get());
+
+	SetShader(state.shader.Get());
+
+	// Tetxures
+	{
+		// Find ranges for lowest common difference: [0 1 2 ... form ... to ... MAX_TEXTURE_SLOTS-1]
+
+		int to = MAX_TEXTURE_SLOTS - 1;
+		while (to > -1 &&
+			state.texShaderBindings[to].Get() == _state.texShaderBindings[to].Get())
+		{
+			to--;
+		}
+
+		int from = 0;
+		while (from <= to &&
+			state.texShaderBindings[from].Get() == _state.texShaderBindings[from].Get())
+		{
+			from++;
+		}
+
+		if (from <= to)
+		{
+			ID3D11ShaderResourceView *srv[MAX_TEXTURE_SLOTS] = {};
+			ID3D11SamplerState *ss[MAX_TEXTURE_SLOTS] = {};
+
+			for (int i = from; i <= to; i++)
+			{
+				if (state.texShaderBindings[i].Get())
+				{
+					DX11Texture *dxTex = getDX11Texture(state.texShaderBindings[i].Get());
+					srv[i] = dxTex->srView();
+					ss[i] = dxTex->sampler();
+				}
+			}
+
+			int num = to - from + 1;
+
+			_context->PSSetShaderResources(from, num, srv);
+			_context->PSSetSamplers(from, num, ss);
+		}
+	}
+
+	// TODO
+	// render target
+	// clear color
 
 	_state = state;
 	_statesStack.pop();
@@ -753,8 +802,6 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 	if (_state.mesh.Get() == mesh)
 		return S_OK;
 
-	
-
 	if (mesh)
 	{
 		_state.mesh = ComPtr<IMesh>(mesh);
@@ -792,7 +839,7 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 
 API DX11CoreRender::BindTexture(uint slot, ITexture *texture)
 {
-	assert(slot < 16 && "DX11CoreRender::BindTexture(): slot must be 0...15");
+	assert(slot < MAX_TEXTURE_SLOTS && "DX11CoreRender::BindTexture(): slot must be 0...15");
 
 	if (_state.texShaderBindings[slot].Get() == texture)
 		return S_OK;
@@ -823,7 +870,7 @@ API DX11CoreRender::BindTexture(uint slot, ITexture *texture)
 API DX11CoreRender::UnbindAllTextures()
 {
 	int someTextureBinded = 0;
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
 	{
 		if (_state.texShaderBindings[i].Get())
 		{
@@ -834,11 +881,11 @@ API DX11CoreRender::UnbindAllTextures()
 
 	if (someTextureBinded)
 	{
-		ID3D11ShaderResourceView *nullArraySRV[16] = {};
-		_context->PSSetShaderResources(0, 16, nullArraySRV);
+		ID3D11ShaderResourceView *nullArraySRV[MAX_TEXTURE_SLOTS] = {};
+		_context->PSSetShaderResources(0, MAX_TEXTURE_SLOTS, nullArraySRV);
 
-		ID3D11SamplerState *nullArraySs[16] = {};
-		_context->PSSetSamplers(0, 16, nullArraySs);
+		ID3D11SamplerState *nullArraySs[MAX_TEXTURE_SLOTS] = {};
+		_context->PSSetSamplers(0, MAX_TEXTURE_SLOTS, nullArraySs);
 	}
 
 	return S_OK;
@@ -897,29 +944,21 @@ API DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
 	return S_OK;
 }
 
-API DX11CoreRender::SetViewport(uint w, uint h)
+API DX11CoreRender::SetViewport(uint newWidth, uint newHeight)
 {
-	D3D11_VIEWPORT v;
-	UINT viewportNumber = 1;
-
-	_context->RSGetViewports(&viewportNumber, &v);
-
-	uint old_w = (uint)v.Width;
-	uint old_h = (uint)v.Height;
-
-	if (old_w != w || old_h != h)
+	if (_state.width != newWidth || _state.heigth != newHeight)
 	{
-		v.Height = (float)h;
-		v.Width = (float)w;
+		dxViewport.Height = (float)newHeight;
+		dxViewport.Width = (float)newWidth;
 
 		destroy_default_buffers();
 		
-		if (FAILED(_swapChain->ResizeBuffers(1, w, h, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
+		if (FAILED(_swapChain->ResizeBuffers(1, newWidth, newHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
 			return E_ABORT;
 
-		create_default_buffers(w, h);
+		create_default_buffers(newWidth, newHeight);
 
-		_context->RSSetViewports(1, &v);
+		_context->RSSetViewports(1, &dxViewport);
 	}
 
 	return S_OK;
@@ -1222,7 +1261,7 @@ void DX11RenderTarget::clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT depth
 
 API DX11RenderTarget::SetColorTexture(uint slot, ITexture *tex)
 {
-	assert(slot < 8 && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
+	assert(slot < MAX_RENDER_TARGETS && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
 	_colors[slot] = ComPtr<ITexture>(tex);
 	return S_OK;
 }
@@ -1235,7 +1274,7 @@ API DX11RenderTarget::SetDepthTexture(ITexture *tex)
 
 API DX11RenderTarget::UnbindColorTexture(uint slot)
 {
-	assert(slot < 8 && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
+	assert(slot < MAX_RENDER_TARGETS && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
 	_colors[slot] = ComPtr<ITexture>();
 	return S_OK;
 }

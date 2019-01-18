@@ -7,23 +7,21 @@ struct ConstantBuffer
 {
 	string name;
 	uint bytes = 0;	
+	bool needFlush = true;
+	WRL::ComPtr<ID3D11Buffer> dxBuffer;
+	std::unique_ptr<uint8[]> data;
 
-	struct ConstantBufferParameter
+	struct Parameter
 	{
 		string name;
 		uint offset = 0;
 		uint bytes = 0;
 		uint elements = 1; // number of elements in array (if parameter is array)
 	};
-	vector<ConstantBufferParameter> parameters;
-
-	std::unique_ptr<uint8[]> data;
-	bool needFlush = true;
-
-	WRL::ComPtr<ID3D11Buffer> dxBuffer;
+	vector<Parameter> parameters;
 
 public:
-	ConstantBuffer(WRL::ComPtr<ID3D11Buffer> dxBufferIn, uint bytesIn, const string& nameIn, const vector<ConstantBufferParameter>& paramsIn) :
+	ConstantBuffer(WRL::ComPtr<ID3D11Buffer> dxBufferIn, uint bytesIn, const string& nameIn, const vector<Parameter>& paramsIn) :
 		dxBuffer(dxBufferIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
@@ -112,6 +110,11 @@ class DX11CoreRender final : public ICoreRender
 		//
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 		WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
+
+		// Viewport
+		//
+		GLint x = 0, y = 0;
+		GLint width = 0, heigth = 0;
 
 		// Shader
 		//

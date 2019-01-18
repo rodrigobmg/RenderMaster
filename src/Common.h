@@ -12,6 +12,8 @@ using std::vector;
 using std::string;
 
 #define SHADER_DIR "src\\shaders"
+#define MAX_TEXTURE_SLOTS 16
+#define MAX_RENDER_TARGETS 8
 
 /////////////////////
 // Events

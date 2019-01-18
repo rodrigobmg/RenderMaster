@@ -34,7 +34,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 		glGetActiveUniformBlockiv(_programID, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indicesArray);
 
-		vector<UBO::UBOParameter> parametersUBO;
+		vector<UBO::Parameter> parametersUBO;
 
 		// active UBO parameters
 		for (int j = 0; j < numIndices; j++)
@@ -84,7 +84,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			}
 
 
-			UBO::UBOParameter p;
+			UBO::Parameter p;
 			p.name = nameVariable;
 			p.bytes = bytesVariable;
 			p.offset = offsetVariable;
@@ -95,7 +95,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 		// sort by offset for pretty view
 		#ifdef _DEBUG
-			std::sort(parametersUBO.begin(), parametersUBO.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
+			std::sort(parametersUBO.begin(), parametersUBO.end(), [](const UBO::Parameter& a, const UBO::Parameter& b) -> bool
 			{ 
 				return a.offset < b.offset; 
 			});
@@ -186,7 +186,7 @@ void GLShader::setParameter(const char *name, const void *data)
 		return;
 
 	UBO &ubo = UBOpool[p.bufferIndex];
-	UBO::UBOParameter &pUBO = ubo.parameters[p.parameterIndex];
+	UBO::Parameter &pUBO = ubo.parameters[p.parameterIndex];
 	uint8 *pointer = ubo.data.get() + pUBO.offset;
 	if (memcmp(pointer, data, pUBO.bytes))
 	{
@@ -201,7 +201,7 @@ void GLShader::bind()
 	for (int i = 0; i < _bufferIndicies.size(); i++)
 	{
 		UBO &ubo = UBOpool[_bufferIndicies[i]];
-		glBindBufferBase(GL_UNIFORM_BUFFER, i, ubo._ID);
+		glBindBufferBase(GL_UNIFORM_BUFFER, i, ubo.ID);
 		glUniformBlockBinding(_programID, i, i);
 	}
 }
@@ -237,7 +237,7 @@ API GLShader::FlushParameters()
 		UBO &ubo = UBOpool[idx];
 		if (ubo.needFlush)
 		{
-			glNamedBufferSubData(ubo._ID, 0, ubo.bytes, ubo.data.get());
+			glNamedBufferSubData(ubo.ID, 0, ubo.bytes, ubo.data.get());
 			ubo.needFlush = false;
 		}
 	}

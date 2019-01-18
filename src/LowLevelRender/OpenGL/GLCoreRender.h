@@ -1,61 +1,66 @@
 #pragma once
 #include "Common.h"
 
-struct UBO
+struct UBO final
 {
 	string name;
-	uint bytes = 0;	
+	uint bytes = 0u;
+	bool needFlush = true;
+	GLuint ID = 0u;
+	std::unique_ptr<uint8[]> data;
 
-	struct UBOParameter
+	struct Parameter
 	{
 		string name;
-		uint offset = 0;
-		uint bytes = 0;
-		uint elements = 1; // number of elements in array (if parameter is array)
+		uint offset = 0u;
+		uint bytes = 0u;
+		uint elements = 1u; // number of elements in array (if parameter is array)
 	};
-	vector<UBOParameter> parameters;
-
-	std::unique_ptr<uint8[]> data;
-	bool needFlush = true;
-
-	GLuint _ID = 0u;
+	vector<Parameter> parameters;
 
 public:
-	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<UBOParameter>& paramsIn) :
-		_ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+
+	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<Parameter>& paramsIn) :
+		ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
 		memset(data.get(), '\0', bytesIn);
 	}
+
 	UBO(const UBO& r) = delete;
+
 	UBO(UBO&& r)
 	{
 		name = r.name;
 		bytes = r.bytes;
 		parameters = std::move(r.parameters);
-		_ID = r._ID;
-		r._ID = 0;
+		ID = r.ID;
+		r.ID = 0u;
 		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
+
 	UBO& operator=(UBO&& r)
 	{
 		name = r.name;
 		bytes = r.bytes;
 		parameters = std::move(r.parameters);
-		_ID = r._ID;
-		r._ID = 0;
+		ID = r.ID;
+		r.ID = 0u;
 		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
+
 	UBO& operator=(const UBO& r) = delete;
+
 	~UBO()
 	{
-		if (_ID) { glDeleteBuffers(1, &_ID); _ID = 0; }
+		if (ID) { glDeleteBuffers(1, &ID);
+		ID = 0u; }
 	}
 };
 
-class GLRenderTarget : public ICoreRenderTarget
+class GLRenderTarget final : public ICoreRenderTarget
 {
 	GLuint _ID = 0u;
 	GLuint _colors[8];
@@ -81,7 +86,7 @@ class GLCoreRender final : public ICoreRender
 	HDC _hdc{};
 	HGLRC _hRC{};
 	HWND _hWnd{};
-	int _pixel_format = 0;
+	int _pixelFormat = 0;
 	IResourceManager *_pResMan = nullptr;
 
 	struct State
@@ -105,8 +110,8 @@ class GLCoreRender final : public ICoreRender
 
 		// Viewport
 		//
-		GLint viewportX = 0, viewportY = 0;
-		GLint viewportWidth = 0, viewportHeigth = 0;
+		GLint x = 0, y = 0;
+		GLint width = 0, heigth = 0;
 
 		// Shader
 		//

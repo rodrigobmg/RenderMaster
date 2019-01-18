@@ -85,6 +85,14 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		_pCoreRender->BindTexture(0, fontTexture.Get());
 
+		// dbg
+		_pCoreRender->BindTexture(6, fontTexture.Get());
+		_pCoreRender->BindTexture(2, whiteTexture.Get());
+		_pCoreRender->PushStates();		
+		_pCoreRender->BindTexture(2, nullptr);
+		_pCoreRender->BindTexture(6, nullptr);
+		_pCoreRender->PopStates();
+
 		_pCoreRender->SetBlendState(BLEND_FACTOR::SRC_ALPHA, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 		_pCoreRender->SetDepthTest(0);
 
