@@ -38,7 +38,7 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 
 	_pCoreRender->BindTexture(0, buffers.colorHDR.Get());
 
-	_pCoreRender->SetDepthTest(0);	
+	_pCoreRender->SetDepthTest(0);
 
 	renderTarget->SetColorTexture(0, buffers.color.Get());
 	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());

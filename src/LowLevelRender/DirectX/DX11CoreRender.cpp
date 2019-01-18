@@ -250,7 +250,7 @@ API DX11CoreRender::Free()
 	// Debug
 	//{
 	//	ComPtr<ID3D11Debug> pDebug;
-	//	_device.As(&pDebug);	
+	//	_device.As(&pDebug);
 	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);	
 	//}
 
@@ -869,23 +869,32 @@ API DX11CoreRender::BindTexture(uint slot, ITexture *texture)
 
 API DX11CoreRender::UnbindAllTextures()
 {
-	int someTextureBinded = 0;
-	for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
+	int to = MAX_TEXTURE_SLOTS - 1;
+	while (to > -1 && _state.texShaderBindings[to].Get() == nullptr)
 	{
-		if (_state.texShaderBindings[i].Get())
-		{
-			someTextureBinded = 1;
-			_state.texShaderBindings[i] = nullptr;
-		}
+		to--;
 	}
 
-	if (someTextureBinded)
+	int from = 0;
+	while (from <= to && _state.texShaderBindings[from].Get() == nullptr)
 	{
-		ID3D11ShaderResourceView *nullArraySRV[MAX_TEXTURE_SLOTS] = {};
-		_context->PSSetShaderResources(0, MAX_TEXTURE_SLOTS, nullArraySRV);
+		from++;
+	}
 
-		ID3D11SamplerState *nullArraySs[MAX_TEXTURE_SLOTS] = {};
-		_context->PSSetSamplers(0, MAX_TEXTURE_SLOTS, nullArraySs);
+	if (from <= to)
+	{
+		ID3D11ShaderResourceView *srv[MAX_TEXTURE_SLOTS] = {};
+		ID3D11SamplerState *ss[MAX_TEXTURE_SLOTS] = {};
+
+		int num = to - from + 1;
+
+		_context->PSSetShaderResources(from, num, srv);
+		_context->PSSetSamplers(from, num, ss);
+
+		for (int i = from; i <= to; i++)
+		{
+			_state.texShaderBindings[i] = nullptr;
+		}
 	}
 
 	return S_OK;
