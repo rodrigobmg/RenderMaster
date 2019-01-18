@@ -217,5 +217,8 @@
     <None Include="..\src\LowLevelRender\DirectX\states_pools.inl">
       <Filter>LowLevelRender\DirectX</Filter>
     </None>
+    <None Include="..\src\Shaders\font.shader">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

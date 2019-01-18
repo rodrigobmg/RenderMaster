@@ -612,11 +612,11 @@ const char* ResourceManager::loadTextFile(const char *pShaderName)
 	return tmp;
 }
 
-API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
+API ResourceManager::LoadModel(OUT IModel **pModel, const char *path)
 {
-	assert(is_relative(pModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
+	assert(is_relative(path) && "ResourceManager::LoadModel(): fileName must be relative");
 
-	auto fullPath = constructFullPath(pModelPath);
+	auto fullPath = constructFullPath(path);
 
 	if (!errorIfPathNotExist(fullPath))
 	{
@@ -624,11 +624,11 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 		return E_FAIL;
 	}
 
-	vector<IMesh*> loaded_meshes = findLoadedMeshes(pModelPath, nullptr);
+	vector<IMesh*> loaded_meshes = findLoadedMeshes(path, nullptr);
 
 	IModel *model = nullptr;
 
-	const string file_ext = fileExtension(pModelPath);
+	const string file_ext = fileExtension(path);
 
 	if (loaded_meshes.size())
 	{
@@ -648,7 +648,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		loaded_meshes = _FBX_load_meshes(fullPath.c_str(), pModelPath);
+		loaded_meshes = _FBX_load_meshes(fullPath.c_str(), path);
 		for (IMesh *m : loaded_meshes)
 		{
 			const char *meshName;
@@ -681,11 +681,11 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
+API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 {
 	string relativeModelPath;
 	string meshID;
-	split_mesh_path(pMeshPath, relativeModelPath, meshID);
+	split_mesh_path(path, relativeModelPath, meshID);
 
 	vector<IMesh*> loaded_meshes = findLoadedMeshes(relativeModelPath.c_str(), meshID.c_str());
 
@@ -700,16 +700,16 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 	ICoreMesh *stdCoreMesh = nullptr;
 
-	if (!strcmp(pMeshPath, "std#plane"))
+	if (!strcmp(path, "std#plane"))
 	{
-		float vertexPlane[16] =
+		float vertex[24] =
 		{
-			-1.0f, 1.0f, 0.0f, 1.0f,
-			 1.0f,-1.0f, 0.0f, 1.0f,
-			 1.0f, 1.0f, 0.0f, 1.0f,
-			-1.0f,-1.0f, 0.0f, 1.0f
+			-1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 1.0f,
+			 1.0f,-1.0f, 0.0f, 1.0f,	1.0f, 0.0f,
+			 1.0f, 1.0f, 0.0f, 1.0f,	1.0f, 1.0f,
+			-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f
 		};
-
+		
 		unsigned short indexPlane[6]
 		{
 			0, 2, 1,
@@ -717,9 +717,12 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		};
 
 		MeshDataDesc desc;
-		desc.pData = reinterpret_cast<uint8*>(vertexPlane);
+		desc.pData = reinterpret_cast<uint8*>(vertex);
 		desc.numberOfVertex = 4;
-		desc.positionStride = 16;
+		desc.positionStride = 24;
+		desc.texCoordPresented = true;
+		desc.texCoordOffset = 16;
+		desc.texCoordStride = 24;
 
 		MeshIndexDesc indexDesc;
 		indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
@@ -729,7 +732,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
 			return E_ABORT;
 
-	} else if (!strcmp(pMeshPath, "std#axes"))
+	} else if (!strcmp(path, "std#axes"))
 	{
 		float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
@@ -743,7 +746,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
 			return E_ABORT;
 
-	} else if (!strcmp(pMeshPath, "std#axes_arrows"))
+	} else if (!strcmp(path, "std#axes_arrows"))
 	{
 		// Layout: position, color, position, color, ...
 		const float arrowRadius = 0.052f;
@@ -790,7 +793,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
 			return E_ABORT;
 
-	} else if (!strcmp(pMeshPath, "std#grid"))
+	} else if (!strcmp(path, "std#grid"))
 	{
 		const float linesInterval = 5.0f;
 		const int linesNumber = 31;
@@ -814,7 +817,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
 			return E_ABORT;
-	}else if (!strcmp(pMeshPath, "std#quad_lines"))
+	}else if (!strcmp(path, "std#quad_lines"))
 	{
 		vec4 vertex[8];
 		vertex[0] = vec4(0.0f, 0.0f, 0.0f, 1.0f); vertex[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -835,13 +838,13 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 	if (stdCoreMesh)
 	{
-		Mesh *m = new Mesh(stdCoreMesh, pMeshPath);
+		Mesh *m = new Mesh(stdCoreMesh, path);
 
 		#ifdef PROFILE_RESOURCES
 			DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
 		#endif
 		*pMesh = m;
-		_sharedMeshes.emplace(pMeshPath, m);
+		_sharedMeshes.emplace(path, m);
 		return S_OK;
 	}
 
@@ -892,16 +895,16 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *pShaderName)
+API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *path)
 {
-	const char *text = loadTextFile(pShaderName);
+	const char *text = loadTextFile(path);
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadTextFile() new TextFile");
 	#endif
 
-	TextFile *textFile = new TextFile(text, pShaderName);
-	_sharedTextFiles.emplace(pShaderName, textFile);
+	TextFile *textFile = new TextFile(text, path);
+	_sharedTextFiles.emplace(path, textFile);
 
 	*pShader = textFile;
 
@@ -1246,7 +1249,7 @@ ICoreTexture* ResourceManager::loadWhiteTexture()
 	return tex;
 }
 
-ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags)
+ICoreTexture* ResourceManager::loadDDS(const char *path, TEXTURE_CREATE_FLAGS flags)
 {
 	IFile *pFile = nullptr;
 	uint fileSize = 0;
@@ -1254,7 +1257,7 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 	const char *pString;
 	_pCore->GetDataDir(&pString);
 	string dataDir = string(pString);
-	string fullPath = dataDir + '\\' + pTexturePath;
+	string fullPath = dataDir + '\\' + path;
 
 	if (!errorIfPathNotExist(fullPath))
 		return nullptr;
@@ -1329,33 +1332,33 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 	return tex;
 }
 
-API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags)
+API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags)
 {
 	ICoreTexture *coreTex;
 
-	if (!strcmp(pTexturePath, "std#white_texture"))
+	if (!strcmp(path, "std#white_texture"))
 	{
 		coreTex = loadWhiteTexture();
 	}
 	else
 	{
-		if (pTexturePath == NULL || strlen(pTexturePath) == 0)
+		if (path == NULL || strlen(path) == 0)
 		{
 			*pTexture = getRender()->WhiteTexture();
 			return E_INVALIDARG;
 		}
 
-		if (!errorIfPathNotExist(pTexturePath))
+		if (!errorIfPathNotExist(path))
 		{
 			*pTexture = getRender()->WhiteTexture();
 			return E_INVALIDARG;
 		}
 
-		const string file_ext = fileExtension(pTexturePath);
+		const string file_ext = fileExtension(path);
 
 		if (file_ext == "dds")
 		{
-			coreTex = loadDDS(pTexturePath, flags);
+			coreTex = loadDDS(path, flags);
 			if (!coreTex)
 			{
 				LOG_WARNING("ResourceManager::LoadTexture(): some error occured");
@@ -1371,13 +1374,13 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pTexturePa
 		}
 	}
 
-	ITexture *tex = new Texture(coreTex, pTexturePath);
+	ITexture *tex = new Texture(coreTex, path);
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
 	#endif
 
-	_sharedTextures.emplace(pTexturePath, tex);
+	_sharedTextures.emplace(path, tex);
 	*pTexture = tex;
 
 	return S_OK;

@@ -34,9 +34,12 @@ class Render : public IRender
 	WRL::ComPtr<ITextFile> _forwardShader;
 	WRL::ComPtr<ITextFile> _postShader;
 	WRL::ComPtr<ITextFile> _idShader;
+	WRL::ComPtr<ITextFile> _fontShader;
+
 	WRL::ComPtr<IMesh> _postPlane;
 	WRL::ComPtr<IRenderTarget> renderTarget;
 	WRL::ComPtr<ITexture> whiteTexture;
+	WRL::ComPtr<ITexture> fontTexture;
 
 	struct TexturePoolable
 	{

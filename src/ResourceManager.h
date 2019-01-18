@@ -72,11 +72,11 @@ public:
 	virtual ~ResourceManager();
 
 	void RemoveRuntimeMesh(IMesh *mesh) { _runtimeMeshes.erase(mesh); }
-	void RemoveSharedMesh(const string& file) { _sharedMeshes.erase(file); }
+	void RemoveSharedMesh(const string& path) { _sharedMeshes.erase(path); }
 	void RemoveRuntimeTexture(ITexture *tex) { _runtimeTextures.erase(tex); }
-	void RemoveSharedTexture(const string& file) { _sharedTextures.erase(file); }
+	void RemoveSharedTexture(const string& path) { _sharedTextures.erase(path); }
 	void RemoveRuntimeGameObject(IGameObject *g) { _runtimeGameobjects.erase(g); }
-	void RemoveSharedTextFile(const string& file) { _sharedTextFiles.erase(file); }
+	void RemoveSharedTextFile(const string& path) { _sharedTextFiles.erase(path); }
 	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
 	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
 
@@ -84,10 +84,10 @@ public:
 
 	void Init();
 
-	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
-	API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) override;
-	API LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags) override;
-	API LoadTextFile(OUT ITextFile **pShader, const char *pShaderName) override;
+	API LoadModel(OUT IModel **pModel, const char *path) override;
+	API LoadMesh(OUT IMesh **pMesh, const char *path) override;
+	API LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) override;
+	API LoadTextFile(OUT ITextFile **pShader, const char *path) override;
 
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;

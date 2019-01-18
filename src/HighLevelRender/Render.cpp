@@ -75,6 +75,29 @@ void Render::RenderFrame(const ICamera *pCamera)
 	//
 	renderEnginePost(buffers);
 
+	{
+		INPUT_ATTRUBUTE attribs;
+		_postPlane->GetAttributes(&attribs);
+
+		IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
+		_pCoreRender->SetShader(shader);
+		setShaderPostParameters(RENDER_PASS::FONT, shader);
+
+		_pCoreRender->BindTexture(0, fontTexture.Get());
+
+		_pCoreRender->SetDepthTest(0);
+
+		renderTarget->SetColorTexture(0, buffers.color.Get());
+		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get()); _pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+		{
+			_pCoreRender->Draw(_postPlane.Get());
+		}
+		_pCoreRender->RestoreDefaultRenderTarget();
+
+		_pCoreRender->UnbindAllTextures();
+		_pCoreRender->SetDepthTest(1);
+	}
+
 #if 0
 	///////////////////////////////
 	// ID pass
@@ -255,6 +278,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 			case RENDER_PASS::ID: targetShader = _idShader; break;
 			case RENDER_PASS::FORWARD: targetShader = _forwardShader; break;
 			case RENDER_PASS::ENGINE_POST: targetShader = _postShader; break;
+			case RENDER_PASS::FONT: targetShader = _fontShader; break;
 		}
 
 		targetShader->GetText(&text);
@@ -458,6 +482,9 @@ void Render::Init()
 	_pResMan->LoadTextFile(&shader, "post\\engine_post.shader");
 	_postShader =  WRL::ComPtr<ITextFile>(shader);
 
+	_pResMan->LoadTextFile(&shader, "font.shader");
+	_fontShader =  WRL::ComPtr<ITextFile>(shader);
+
 	// Render Targets
 	IRenderTarget *RT;
 	_pResMan->CreateRenderTarget(&RT);
@@ -489,21 +516,27 @@ void Render::Init()
 	tex->Release();
 
 	TEXTURE_CREATE_FLAGS flags = {};
+
 	_pResMan->LoadTexture(&tex, "std#white_texture", flags);
 	whiteTexture = WRL::ComPtr<ITexture>(tex);
+
+	_pResMan->LoadTexture(&tex, "ExportedFont.dds", flags);
+	fontTexture = WRL::ComPtr<ITexture>(tex);
 
 	LOG("Render initialized");
 }
 
 void Render::Free()
 {
+	fontTexture.Reset();
 	whiteTexture.Reset();
 	_postPlane.Reset();
 	renderTarget.Reset();
+	_fontShader.Reset();
 	_forwardShader.Reset();
 	_idShader.Reset();
 	_texture_pool.clear();
-	_shaders_pool.clear();	
+	_shaders_pool.clear();
 }
 
 API Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
