@@ -42,9 +42,9 @@ MAIN_VERTEX_END
 
 MAIN_FRAG(VS_OUTPUT)
 
-	float tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord));
+	float tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).r;
 
-	OUT_COLOR = vec4(tex, tex, tex, 1.0f);
+	OUT_COLOR = vec4(1.0f, 1.0f, 1.0f, tex);
 
 MAIN_FRAG_END
 

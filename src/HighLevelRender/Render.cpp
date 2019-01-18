@@ -85,6 +85,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		_pCoreRender->BindTexture(0, fontTexture.Get());
 
+		_pCoreRender->SetBlendState(BLEND_FACTOR::SRC_ALPHA, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 		_pCoreRender->SetDepthTest(0);
 
 		renderTarget->SetColorTexture(0, buffers.color.Get());
@@ -95,7 +96,9 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->RestoreDefaultRenderTarget();
 
 		_pCoreRender->UnbindAllTextures();
+
 		_pCoreRender->SetDepthTest(1);
+		_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
 	}
 
 #if 0

@@ -94,7 +94,7 @@ class DX11CoreRender final : public ICoreRender
 	#include "states_pools.inl"
 	BlendStatePool _blendStatePool{*this};
 	RasterizerStatePool _rasterizerStatePool{*this};
-	DepthStencilStatePool _depthStencilStatePool{*this};	
+	DepthStencilStatePool _depthStencilStatePool{*this};
 
 	struct State
 	{
