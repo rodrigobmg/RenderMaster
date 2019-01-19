@@ -33,7 +33,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 
 	// each Constant Buffer
 	for(unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
-	{			
+	{
 		ID3D11ShaderReflectionConstantBuffer* buffer = reflection->GetConstantBufferByIndex(i);
 
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
@@ -101,18 +101,18 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			}
 		}
 
-		vector<size_t> *_b;
+		vector<size_t> *buf;
 
 		switch (type)
 		{
-			case SHADER_TYPE::SHADER_VERTEX:	_b = &v._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_GEOMETRY:	_b = &g._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_FRAGMENT:	_b = &f._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_VERTEX:	buf = &v._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_GEOMETRY:	buf = &g._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_FRAGMENT:	buf = &f._bufferIndicies; break;
 		};
 
 		if (indexFound != -1) // buffer found
 		{
-			_b->push_back(indexFound);
+			buf->push_back(indexFound);
 
 			for (int i = 0; i < cbParameters.size(); i++)
 			{
@@ -136,9 +136,9 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			ICoreRender *coreRender = getCoreRender(_pCore);
 			DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
 
-			auto hr = dxRender->getDevice()->CreateBuffer(&desc, nullptr, dxBuffer.GetAddressOf());
+			ThrowIfFailed(dxRender->getDevice()->CreateBuffer(&desc, nullptr, dxBuffer.GetAddressOf()));
 
-			_b->push_back(ConstantBufferPool.size());
+			buf->push_back(ConstantBufferPool.size());
 
 			for (int k = 0; k < cbParameters.size(); k++)
 			{

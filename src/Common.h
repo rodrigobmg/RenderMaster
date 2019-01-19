@@ -15,6 +15,17 @@ using std::string;
 #define MAX_TEXTURE_SLOTS 16
 #define MAX_RENDER_TARGETS 8
 
+#ifdef DIRECTX_11_INCLUDED
+inline void ThrowIfFailed(HRESULT hr)
+{
+	if (FAILED(hr))
+	{
+		// Set a breakpoint on this line to catch DirectX API errors
+		throw std::exception();
+	}
+}
+#endif
+
 /////////////////////
 // Events
 /////////////////////

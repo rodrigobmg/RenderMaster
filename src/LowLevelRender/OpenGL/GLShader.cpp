@@ -41,14 +41,14 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		{
 			GLuint index = (GLuint)indicesArray[j];
 
-			uint bytesVariable;
+			size_t bytesVariable;
 
 			GLint elementsNum;
 			GLenum typeVariable;
 			char nameVariable[1024];
 			glGetActiveUniform(_programID, index, sizeof(nameVariable), NULL, &elementsNum, &typeVariable, nameVariable);
 			
-			GLint offsetVariable;						
+			GLint offsetVariable;
 			glGetActiveUniformsiv(_programID, 1, &index, GL_UNIFORM_OFFSET, &offsetVariable);
 
 			char *s = strchr(nameVariable, '[');
@@ -137,7 +137,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		{
 			_bufferIndicies.push_back(indexFound);
 
-			for (int i = 0; i < parametersUBO.size(); i++)
+			for (size_t i = 0; i < parametersUBO.size(); i++)
 			{
 				_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
 			}
@@ -158,7 +158,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 				_parameters[parametersUBO[i].name] = {(int)UBOpool.size(), (int)i};
 			}
 
-			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));			
+			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
 		}
 	}
 }

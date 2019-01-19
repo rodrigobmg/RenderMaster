@@ -140,7 +140,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 			UINT quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 			UINT quality_ds = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
 
-			if (quality && quality_ds) break;			
+			if (quality && quality_ds) break;
 
 			_MSAASamples /= 2;
 		}
@@ -152,7 +152,6 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 			LOG_WARNING_FORMATTED("DX11CoreRender::Init() DirectX doesn't support %s MSAA. Now using %s MSAA", need_msaa.c_str(), actially_msaa.c_str());
 		}
 	}
-
 
 	// Create swap chain
 	ComPtr<IDXGIFactory2> dxgiFactory2;
@@ -337,22 +336,11 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	ComPtr<ID3DBlob> errorBuffer;
 	ComPtr<ID3DBlob> shaderBuffer;
 
-	auto hr = D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(SHADER_TYPE::SHADER_VERTEX), SHADER_COMPILE_FLAGS, 0, &shaderBuffer, &errorBuffer);
-
-	if (FAILED(hr))
-	{
-		if (errorBuffer)
-			LOG_FATAL_FORMATTED("DX11CoreRender::createDummyShader() failed to compile shader %s\n", (char*)errorBuffer->GetBufferPointer());
-		
-		return hr;
-	}
-
+	ThrowIfFailed(D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(SHADER_TYPE::SHADER_VERTEX), SHADER_COMPILE_FLAGS, 0, &shaderBuffer, &errorBuffer));
+	
 	//
 	// create input layout
-	hr = _device->CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(&layout[0]), (UINT)layout.size(), shaderBuffer->GetBufferPointer(), shaderBuffer->GetBufferSize(), &il);
-
-	if (FAILED(hr))
-		return hr;	
+	ThrowIfFailed((_device->CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(&layout[0]), (UINT)layout.size(), shaderBuffer->GetBufferPointer(), shaderBuffer->GetBufferSize(), &il)));
 
 	//
 	// vertex buffer
@@ -367,13 +355,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	D3D11_SUBRESOURCE_DATA initData{};
 	initData.pSysMem = dataDesc->pData;
 
-	hr = _device->CreateBuffer(&bd, &initData, &vb);
-
-	if (FAILED(hr))
-	{
-		vb->Release();
-		return hr;
-	}
+	ThrowIfFailed(_device->CreateBuffer(&bd, &initData, &vb));
 
 	//
 	// index buffer
@@ -402,14 +384,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 		ibData.SysMemPitch = 0;
 		ibData.SysMemSlicePitch = 0;
 
-		hr = _device->CreateBuffer(&bufferDesc, &ibData, &ib);
-
-		if (FAILED(hr))
-		{
-			vb->Release();
-			il->Release();
-			return hr;
-		}
+		ThrowIfFailed(_device->CreateBuffer(&bufferDesc, &ibData, &ib));
 	}
 
 	*pMesh = new DX11Mesh(vb, ib, il, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs, bytesWidth);
@@ -1074,9 +1049,9 @@ ComPtr<ID3DBlob> DX11CoreRender::create_shader_by_src(ID3D11DeviceChild *&poiter
 		const char *type_str = nullptr;
 		switch (type)
 		{
-		case SHADER_TYPE::SHADER_VERTEX: type_str = "vertex"; err = E_VERTEX_SHADER_FAILED_COMPILE; break;
-		case SHADER_TYPE::SHADER_GEOMETRY: type_str = "geometry"; err = E_GEOM_SHADER_FAILED_COMPILE; break;
-		case SHADER_TYPE::SHADER_FRAGMENT: type_str = "fragment"; err = E_FRAGMENT_SHADER_FAILED_COMPILE; break;
+			case SHADER_TYPE::SHADER_VERTEX: type_str = "vertex"; err = E_VERTEX_SHADER_FAILED_COMPILE; break;
+			case SHADER_TYPE::SHADER_GEOMETRY: type_str = "geometry"; err = E_GEOM_SHADER_FAILED_COMPILE; break;
+			case SHADER_TYPE::SHADER_FRAGMENT: type_str = "fragment"; err = E_FRAGMENT_SHADER_FAILED_COMPILE; break;
 		}
 
 		if (error_buffer)
@@ -1128,7 +1103,7 @@ API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *read
 	cpuReadTexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	cpuReadTexDesc.MiscFlags = 0;
 
-	_device->CreateTexture2D(&cpuReadTexDesc, nullptr, &cpuReadTex);
+	ThrowIfFailed(_device->CreateTexture2D(&cpuReadTexDesc, nullptr, &cpuReadTex));
 
 	_context->CopyResource(cpuReadTex, d3dtex2d);
 	D3D11_MAPPED_SUBRESOURCE mapResource;

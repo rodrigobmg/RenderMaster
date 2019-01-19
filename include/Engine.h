@@ -9,6 +9,8 @@
 // print all resources allocation and deallocation 
 //#define PROFILE_RESOURCES
 
+#define DIRECTX_11_INCLUDED
+
 #include "VectorMath.h"
 
 #include <windows.h>

@@ -4,7 +4,7 @@
 struct UBO final
 {
 	string name;
-	uint bytes = 0u;
+	size_t bytes = 0u;
 	bool needFlush = true;
 	GLuint ID = 0u;
 	std::unique_ptr<uint8[]> data;
@@ -12,15 +12,15 @@ struct UBO final
 	struct Parameter
 	{
 		string name;
-		uint offset = 0u;
-		uint bytes = 0u;
-		uint elements = 1u; // number of elements in array (if parameter is array)
+		size_t offset = 0u;
+		size_t bytes = 0u;
+		size_t elements = 1u; // number of elements in array (if parameter is array)
 	};
 	vector<Parameter> parameters;
 
 public:
 
-	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<Parameter>& paramsIn) :
+	UBO(GLuint IDIn, size_t bytesIn, const string& nameIn, const vector<Parameter>& paramsIn) :
 		ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
