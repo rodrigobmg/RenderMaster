@@ -7,16 +7,14 @@ struct RenderBuffers
 	uint width;
 
 	TexturePtr color;		// RGBA8	- Result tonemaped frame
-
-	TexturePtr colorHDR;		// RGBA16F	- HDR frame
+	TexturePtr colorHDR;	// RGBA16F	- HDR frame
 	TexturePtr depth;		// D24S8	- Hardware depth
-
-	TexturePtr directLight;	// RGB16F	- Accumulation texture for all lights	
 
 	// GBuffer
 	TexturePtr normal;		// RGB8		- World space normal
 	TexturePtr shading;		// RGB8		- ?
 
+	TexturePtr directLight;	// RGB16F	- Accumulation texture for all lights
 	TexturePtr id;			// R32UI	- Models id
 };
 
