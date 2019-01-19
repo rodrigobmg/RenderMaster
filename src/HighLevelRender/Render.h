@@ -6,18 +6,18 @@ struct RenderBuffers
 	uint height;
 	uint width;
 
-	WRL::ComPtr<ITexture> color;		// RGBA8	- Result tonemaped frame
+	TexturePtr color;		// RGBA8	- Result tonemaped frame
 
-	WRL::ComPtr<ITexture> colorHDR;		// RGBA16F	- HDR frame
-	WRL::ComPtr<ITexture> depth;		// D24S8	- Hardware depth
+	TexturePtr colorHDR;		// RGBA16F	- HDR frame
+	TexturePtr depth;		// D24S8	- Hardware depth
 
-	WRL::ComPtr<ITexture> directLight;	// RGB16F	- Accumulation texture for all lights	
+	TexturePtr directLight;	// RGB16F	- Accumulation texture for all lights	
 
 	// GBuffer
-	WRL::ComPtr<ITexture> normal;		// RGB8		- World space normal
-	WRL::ComPtr<ITexture> shading;		// RGB8		- ?
+	TexturePtr normal;		// RGB8		- World space normal
+	TexturePtr shading;		// RGB8		- ?
 
-	WRL::ComPtr<ITexture> id;			// R32UI	- Models id
+	TexturePtr id;			// R32UI	- Models id
 };
 
 //
@@ -36,10 +36,10 @@ class Render : public IRender
 	WRL::ComPtr<ITextFile> _idShader;
 	WRL::ComPtr<ITextFile> _fontShader;
 
-	WRL::ComPtr<IMesh> _postPlane;
-	WRL::ComPtr<IRenderTarget> renderTarget;
-	WRL::ComPtr<ITexture> whiteTexture;
-	WRL::ComPtr<ITexture> fontTexture;
+	MeshPtr _postPlane;
+	RenderTargetPtr renderTarget;
+	TexturePtr whiteTexture;
+	TexturePtr fontTexture;
 
 	struct TexturePoolable
 	{
@@ -48,11 +48,11 @@ class Render : public IRender
 		uint width;
 		uint height;
 		TEXTURE_FORMAT format;
-		WRL::ComPtr<ITexture> tex;
+		TexturePtr tex;
 	};
 	vector<TexturePoolable> _texture_pool;
 
-	std::unordered_map<ShaderRequirement, WRL::ComPtr<IShader>, ShaderRequirement> _shaders_pool;
+	std::unordered_map<ShaderRequirement, ShaderPtr, ShaderRequirement> _shaders_pool;
 	
 	struct RenderMesh
 	{

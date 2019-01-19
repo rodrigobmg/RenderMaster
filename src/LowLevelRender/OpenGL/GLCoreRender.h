@@ -115,19 +115,19 @@ class GLCoreRender final : public ICoreRender
 
 		// Shader
 		//
-		WRL::ComPtr<IShader> shader;
+		ShaderPtr shader;
 
 		// Mesh
 		//
-		WRL::ComPtr<IMesh> mesh;
+		MeshPtr mesh;
 
 		// Textures
 		//
-		WRL::ComPtr<ITexture> texShaderBindings[16]; // slot -> texture
+		TexturePtr texShaderBindings[16]; // slot -> texture
 
 		// Framebuffer
 		//
-		WRL::ComPtr<IRenderTarget> renderTarget;
+		RenderTargetPtr renderTarget;
 
 		// Clear
 		//
@@ -137,8 +137,8 @@ class GLCoreRender final : public ICoreRender
 	State _state;
 	std::stack<State> _statesStack;
 	
-	bool check_shader_errors(int id, GLenum constant);
-	bool create_shader(GLuint &id, GLenum type, const char* pText, GLuint programID);
+	bool checkShaderErrors(int id, GLenum constant);
+	bool createShader(GLuint &id, GLenum type, const char* pText, GLuint programID);
 
 public:
 

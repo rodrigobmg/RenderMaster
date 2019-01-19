@@ -210,7 +210,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 
 	if (it != _shaders_pool.end())
 	{
-		WRL::ComPtr<IShader>& shaderPtr = it->second;
+		ShaderPtr& shaderPtr = it->second;
 		return shaderPtr.Get();
 	}
 	else
@@ -301,10 +301,10 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		if (!compiled)
 		{
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
-			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(nullptr));
+			_shaders_pool.emplace(req, ShaderPtr(nullptr));
 		}
 		else
-			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(pShader));
+			_shaders_pool.emplace(req, ShaderPtr(pShader));
 	}
 	return pShader;
 }
@@ -415,7 +415,7 @@ ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORM
 	ITexture *tex;
 	_pResMan->CreateTexture(&tex, width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, WRL::ComPtr<ITexture>(tex)});
+	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, TexturePtr(tex)});
 
 	return tex;
 }
@@ -491,26 +491,26 @@ void Render::Init()
 	// Render Targets
 	IRenderTarget *RT;
 	_pResMan->CreateRenderTarget(&RT);
-	renderTarget = WRL::ComPtr<IRenderTarget>(RT);
+	renderTarget = RenderTargetPtr(RT);
 
 	// Meshes
 	// get all default meshes and release only for test
-	WRL::ComPtr<IMesh> axesMesh;
-	WRL::ComPtr<IMesh> axesArrowMesh;
-	WRL::ComPtr<IMesh> gridMesh;
+	MeshPtr axesMesh;
+	MeshPtr axesArrowMesh;
+	MeshPtr gridMesh;
 	IMesh *mesh;
 
 	_pResMan->LoadMesh(&mesh, "std#axes");
-	axesMesh = WRL::ComPtr<IMesh>(mesh);
+	axesMesh = MeshPtr(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#axes_arrows");
-	axesArrowMesh = WRL::ComPtr<IMesh>(mesh);
+	axesArrowMesh = MeshPtr(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#grid");
-	gridMesh = WRL::ComPtr<IMesh>(mesh);
+	gridMesh = MeshPtr(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#plane");
-	_postPlane = WRL::ComPtr<IMesh>(mesh);
+	_postPlane = MeshPtr(mesh);
 
 	// Create texture for test
 	ITexture *tex;
@@ -521,10 +521,10 @@ void Render::Init()
 	TEXTURE_CREATE_FLAGS flags = {};
 
 	_pResMan->LoadTexture(&tex, "std#white_texture", flags);
-	whiteTexture = WRL::ComPtr<ITexture>(tex);
+	whiteTexture = TexturePtr(tex);
 
 	_pResMan->LoadTexture(&tex, "ExportedFont.dds", flags);
-	fontTexture = WRL::ComPtr<ITexture>(tex);
+	fontTexture = TexturePtr(tex);
 
 	LOG("Render initialized");
 }

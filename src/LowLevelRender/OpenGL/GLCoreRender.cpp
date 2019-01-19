@@ -70,7 +70,7 @@ void CHECK_GL_ERRORS()
 #endif
 }
 
-bool GLCoreRender::check_shader_errors(int id, GLenum constant)
+bool GLCoreRender::checkShaderErrors(int id, GLenum constant)
 {
 	int status = GL_TRUE;
 
@@ -105,20 +105,20 @@ bool GLCoreRender::check_shader_errors(int id, GLenum constant)
 	return true;
 }
 
-bool GLCoreRender::create_shader(GLuint& id, GLenum type, const char* pText, GLuint programID)
+bool GLCoreRender::createShader(GLuint& id, GLenum type, const char* pText, GLuint programID)
 {
 	GLuint _fileID = glCreateShader(type);
 	glShaderSource(_fileID, 1, (const GLchar **)&pText, nullptr);
 	glCompileShader(_fileID);
 
-	if (!check_shader_errors(_fileID, GL_COMPILE_STATUS))
+	if (!checkShaderErrors(_fileID, GL_COMPILE_STATUS))
 	{
 		glDeleteShader(_fileID);
 		return false;
 	}
 	glAttachShader(programID, _fileID);
 	glLinkProgram(programID);
-	if (!check_shader_errors(programID, GL_LINK_STATUS))
+	if (!checkShaderErrors(programID, GL_LINK_STATUS))
 		return false;
 
 	id = _fileID;
@@ -511,7 +511,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 
 	GLuint programID = glCreateProgram();
 	
-	if (!create_shader(vertID, GL_VERTEX_SHADER, vertText, programID))
+	if (!createShader(vertID, GL_VERTEX_SHADER, vertText, programID))
 	{
 		glDeleteProgram(programID);
 		return E_VERTEX_SHADER_FAILED_COMPILE;
@@ -519,7 +519,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 	
 	if (geomText != nullptr)
 	{
-		if (!create_shader(geomID, GL_GEOMETRY_SHADER, geomText, programID))
+		if (!createShader(geomID, GL_GEOMETRY_SHADER, geomText, programID))
 		{
 			glDeleteProgram(programID);
 			glDeleteShader(vertID);
@@ -527,7 +527,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 		}
 	}
 	
-	if (!create_shader(fragID, GL_FRAGMENT_SHADER, fragText, programID))
+	if (!createShader(fragID, GL_FRAGMENT_SHADER, fragText, programID))
 	{
 		glDeleteProgram(programID);
 		glDeleteShader(vertID);
@@ -743,7 +743,7 @@ API GLCoreRender::PopStates()
 
 API GLCoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 {
-	_state.renderTarget = WRL::ComPtr<IRenderTarget>(pRenderTarget);
+	_state.renderTarget = RenderTargetPtr(pRenderTarget);
 
 	GLRenderTarget *glRT = getGLRenderTarget(pRenderTarget);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRT->ID());
@@ -777,7 +777,7 @@ API GLCoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 
 API GLCoreRender::RestoreDefaultRenderTarget()
 {
-	_state.renderTarget = WRL::ComPtr<IRenderTarget>();
+	_state.renderTarget = RenderTargetPtr();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return S_OK;
 }
@@ -787,7 +787,7 @@ API GLCoreRender::SetShader(IShader* pShader)
 	if (_state.shader.Get() == pShader)
 		return S_OK;
 
-	_state.shader = WRL::ComPtr<IShader>(pShader);
+	_state.shader = ShaderPtr(pShader);
 
 	CHECK_GL_ERRORS();
 	
@@ -811,7 +811,7 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 
 	CHECK_GL_ERRORS();
 
-	_state.mesh = WRL::ComPtr<IMesh>(mesh);
+	_state.mesh = MeshPtr(mesh);
 
 	if (mesh == nullptr)
 		glBindVertexArray(0);

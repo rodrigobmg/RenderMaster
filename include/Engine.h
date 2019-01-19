@@ -13,8 +13,11 @@
 
 #include "VectorMath.h"
 
+#ifdef _WIN32
 #include <windows.h>
 #include <Unknwn.h>
+#include <wrl/client.h>
+#endif
 
 #define API HRESULT __stdcall
 
@@ -983,5 +986,14 @@ namespace RENDER_MASTER
 		//Shuting down COM;
 		CoUninitialize();
 	}
+
+#ifdef _WIN32
+	using TexturePtr = Microsoft::WRL::ComPtr<ITexture>;
+	using MeshPtr = Microsoft::WRL::ComPtr<IMesh>;
+	using ShaderPtr = Microsoft::WRL::ComPtr<IShader>;
+	using RenderTargetPtr = Microsoft::WRL::ComPtr<IRenderTarget>;
+
+	using ModelPtr = Microsoft::WRL::ComPtr<IModel>;
+#endif
 
 }

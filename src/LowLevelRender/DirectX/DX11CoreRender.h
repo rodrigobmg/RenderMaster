@@ -53,8 +53,8 @@ public:
 
 class DX11RenderTarget : public ICoreRenderTarget
 {
-	WRL::ComPtr<ITexture> _colors[8];
-	WRL::ComPtr<ITexture> _depth;
+	TexturePtr _colors[8];
+	TexturePtr _depth;
 
 	void _get_colors(ID3D11RenderTargetView **arrayOut, uint& targetsNum);
 	void _get_depth(ID3D11DepthStencilView **depth);
@@ -118,18 +118,18 @@ class DX11CoreRender final : public ICoreRender
 
 		// Shader
 		//
-		WRL::ComPtr<IShader> shader;
+		ShaderPtr shader;
 
 		// Mesh
 		//
-		WRL::ComPtr<IMesh> mesh;
+		MeshPtr mesh;
 
 		// Textures
 		//
-		WRL::ComPtr<ITexture> texShaderBindings[16]; // slot -> texture
+		TexturePtr texShaderBindings[16]; // slot -> texture
 
 		// Framebuffer
-		WRL::ComPtr<IRenderTarget> renderTarget;
+		RenderTargetPtr renderTarget;
 
 		// Clear
 		//
@@ -146,11 +146,11 @@ class DX11CoreRender final : public ICoreRender
 	int _MSAASamples = 1;
 	int _VSyncOn = 1;
 
-	bool create_default_buffers(uint w, uint h);
-	void destroy_default_buffers();
+	bool createDefaultBuffers(uint w, uint h);
+	void destroyDefaultBuffers();
 
-	WRL::ComPtr<ID3DBlob> create_shader_by_src(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, HRESULT& err);
-	UINT msaa_quality(DXGI_FORMAT format, int MSAASamples);
+	WRL::ComPtr<ID3DBlob> createShader(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, HRESULT& err);
+	UINT MSAAquality(DXGI_FORMAT format, int MSAASamples);
 	
 public:
 
