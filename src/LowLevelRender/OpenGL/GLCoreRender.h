@@ -154,6 +154,7 @@ public:
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
+	API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize) override;
 
 	API PushStates() override;
 	API PopStates() override;

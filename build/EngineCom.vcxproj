@@ -25,9 +25,11 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\ConsoleWindow.h" />
     <ClInclude Include="..\src\Core.h" />
+    <ClInclude Include="..\src\HighLevelRender\Objects\StructuredBuffer.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Mesh.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Shader.h" />
+    <ClInclude Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Texture.h" />
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLTexture.h" />
     <ClInclude Include="..\src\Filesystem.h" />
@@ -62,9 +64,11 @@
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\ConsoleWindow.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
+    <ClCompile Include="..\src\HighLevelRender\Objects\StructuredBuffer.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Mesh.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Shader.cpp" />
+    <ClCompile Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Texture.cpp" />
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
@@ -100,6 +104,7 @@
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
     <None Include="..\src\Shaders\post\engine_post.shader" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">

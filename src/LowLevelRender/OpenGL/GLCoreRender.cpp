@@ -635,6 +635,12 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	return S_OK;
 }
 
+API GLCoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize)
+{
+	*pStructuredBuffer = nullptr;
+	return S_OK;
+}
+
 API GLCoreRender::PushStates()
 {
 	_statesStack.push(_state);

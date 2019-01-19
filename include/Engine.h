@@ -413,7 +413,14 @@ namespace RENDER_MASTER
 		virtual API SetVec4Parameter(const char* name, const vec4 *value) = 0;
 		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
 		virtual API SetUintParameter(const char* name, uint value) = 0;
-		virtual API FlushParameters() = 0;		
+		virtual API FlushParameters() = 0;
+	};
+
+	class ICoreStructuredBuffer
+	{
+	public:
+		virtual API SetData(uint8 *data, size_t size) = 0;
+		virtual API Reallocate(size_t newSize) = 0;
 	};
 
 	enum class BLEND_FACTOR
@@ -445,9 +452,10 @@ namespace RENDER_MASTER
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
+		virtual API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize) = 0;
 
 		virtual API PushStates() = 0;
-		virtual API PopStates() = 0;		
+		virtual API PopStates() = 0;
 		virtual API BindTexture(uint slot, ITexture* texture) = 0;
 		virtual API UnbindAllTextures() = 0;
 		virtual API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
@@ -632,6 +640,14 @@ namespace RENDER_MASTER
 		virtual API SetUintParameter(const char* name, uint value) = 0;
 		virtual API FlushParameters() = 0;
 
+		RUNTIME_ONLY_RESOURCE_INTERFACE
+	};
+
+	class IStructuredBuffer : public IUnknown
+	{
+	public:
+		virtual API SetData(uint8 *data, size_t size) = 0;
+		virtual API Reallocate(size_t newSize) = 0;
 
 		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
@@ -676,6 +692,7 @@ namespace RENDER_MASTER
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
 		virtual API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
+		virtual API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, size_t size, size_t elementSize) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
@@ -992,6 +1009,7 @@ namespace RENDER_MASTER
 	using MeshPtr = Microsoft::WRL::ComPtr<IMesh>;
 	using ShaderPtr = Microsoft::WRL::ComPtr<IShader>;
 	using RenderTargetPtr = Microsoft::WRL::ComPtr<IRenderTarget>;
+	using StructuredBufferPtr = Microsoft::WRL::ComPtr<IStructuredBuffer>;
 
 	using ModelPtr = Microsoft::WRL::ComPtr<IModel>;
 #endif

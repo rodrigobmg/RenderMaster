@@ -4,6 +4,7 @@
 #include "DX11Shader.h"
 #include "DX11Mesh.h"
 #include "DX11Texture.h"
+#include "DX11StructuredBuffer.h"
 
 using WRL::ComPtr;
 
@@ -644,6 +645,34 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 {
 	*pRenderTarget = new DX11RenderTarget();
+	return S_OK;
+}
+
+API DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize)
+{
+	assert(size % 16 == 0);
+
+	D3D11_BUFFER_DESC desc = {};
+	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+	desc.ByteWidth = size;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	desc.StructureByteStride = elementSize;
+
+	ID3D11Buffer *pBuffer;
+	ThrowIfFailed(_device->CreateBuffer(&desc, nullptr, &pBuffer));
+
+	// Create SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
+	srvDesc.BufferEx.FirstElement = 0;
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.BufferEx.NumElements = desc.ByteWidth / desc.StructureByteStride;
+
+	ID3D11ShaderResourceView *pSRVOut;
+	ThrowIfFailed(_device->CreateShaderResourceView(pBuffer, &srvDesc, &pSRVOut));
+
+	*pStructuredBuffer = new DX11StructuredBuffer(pBuffer, pSRVOut);
+
 	return S_OK;
 }
 

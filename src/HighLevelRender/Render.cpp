@@ -488,6 +488,12 @@ void Render::Init()
 	_pResMan->LoadTextFile(&shader, "font.shader");
 	_fontShader =  WRL::ComPtr<ITextFile>(shader);
 
+	const char txt[] = "Hello";
+	auto ss = 16u;
+	IStructuredBuffer *sb;
+	_pResMan->CreateStructuredBuffer(&sb, sizeof(txt) * ss, ss);
+	fontBuffer = StructuredBufferPtr(sb);
+
 	// Render Targets
 	IRenderTarget *RT;
 	_pResMan->CreateRenderTarget(&RT);
@@ -531,6 +537,7 @@ void Render::Init()
 
 void Render::Free()
 {
+	fontBuffer.Reset();
 	fontTexture.Reset();
 	whiteTexture.Reset();
 	_postPlane.Reset();

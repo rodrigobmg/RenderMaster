@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "RenderTarget.h"
+#include "StructuredBuffer.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "SceneManager.h"
@@ -1527,6 +1528,31 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 
 	_runtimeRenderTargets.emplace(rt);
 	*pRenderTargetOut = rt;
+
+	return S_OK;
+}
+
+API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, size_t bytes, size_t elementSize)
+{
+	ICoreStructuredBuffer *coreStructuredBuffer = nullptr;
+
+	bool created = SUCCEEDED(_pCoreRender->CreateStructuredBuffer(&coreStructuredBuffer, bytes, elementSize)) && coreStructuredBuffer != nullptr;
+
+	if (!created)
+	{
+		*pBufOut = nullptr;
+		LOG_WARNING("ResourceManager::CreateStructuredBuffer(): failed to create constnt buffer");
+		return E_FAIL;
+	}
+
+	StructuredBuffer *b = new StructuredBuffer(coreStructuredBuffer);
+
+#ifdef PROFILE_RESOURCES
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateStructuredBuffer() new StructuredBuffer %#010x", b);
+#endif
+
+	_runtimeStructuredBuffers.emplace(b);
+	*pBufOut = b;
 
 	return S_OK;
 }

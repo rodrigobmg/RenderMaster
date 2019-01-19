@@ -30,6 +30,7 @@ class ResourceManager final : public IResourceManager
 	std::unordered_set<IGameObject*> _runtimeGameobjects;
 	std::unordered_set<IShader*> _runtimeShaders;
 	std::unordered_set<IRenderTarget*> _runtimeRenderTargets;
+	std::unordered_set<IStructuredBuffer*> _runtimeStructuredBuffers;
 
 	// Shared resources
 	// Maps "file name" -> "pointer"
@@ -79,6 +80,7 @@ public:
 	void RemoveSharedTextFile(const string& path) { _sharedTextFiles.erase(path); }
 	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
 	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
+	void RemoveRuntimeStructuredBuffer(IStructuredBuffer *b) { _runtimeStructuredBuffers.erase(b); }
 
 	void ReloadTextFile(ITextFile *shaderText);
 
@@ -92,6 +94,7 @@ public:
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
 	API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
+	API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, size_t size, size_t elementSize) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;
 	API CreateCamera(OUT ICamera **pCamera) override;
@@ -100,4 +103,3 @@ public:
 
 	API GetName(OUT const char **pTxt) override;
 };
-

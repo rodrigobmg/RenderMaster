@@ -92,6 +92,12 @@
     <ClInclude Include="..\src\HighLevelRender\Objects\Mesh.h">
       <Filter>HighLevelRender\Obects</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\HighLevelRender\Objects\StructuredBuffer.h">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.h">
+      <Filter>LowLevelRender\DirectX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -159,6 +165,12 @@
     <ClCompile Include="..\src\HighLevelRender\Objects\Mesh.cpp">
       <Filter>HighLevelRender\Obects</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\HighLevelRender\Objects\StructuredBuffer.cpp">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.cpp">
+      <Filter>LowLevelRender\DirectX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Include">
@@ -220,5 +232,6 @@
     <None Include="..\src\Shaders\font.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

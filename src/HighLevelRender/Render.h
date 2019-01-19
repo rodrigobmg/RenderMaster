@@ -41,6 +41,8 @@ class Render : public IRender
 	TexturePtr whiteTexture;
 	TexturePtr fontTexture;
 
+	StructuredBufferPtr fontBuffer;
+
 	struct TexturePoolable
 	{
 		int64_t frame;
