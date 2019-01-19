@@ -6,7 +6,7 @@ namespace WRL = Microsoft::WRL;
 struct ConstantBuffer
 {
 	string name;
-	uint bytes = 0;	
+	size_t bytes = 0u;
 	bool needFlush = true;
 	WRL::ComPtr<ID3D11Buffer> dxBuffer;
 	std::unique_ptr<uint8[]> data;
@@ -14,9 +14,9 @@ struct ConstantBuffer
 	struct Parameter
 	{
 		string name;
-		uint offset = 0;
-		uint bytes = 0;
-		uint elements = 1; // number of elements in array (if parameter is array)
+		size_t offset = 0u;
+		size_t bytes = 0u;
+		size_t elements = 1u; // number of elements in array (if parameter is array)
 	};
 	vector<Parameter> parameters;
 

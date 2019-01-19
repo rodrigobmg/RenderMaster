@@ -64,7 +64,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			p.name = varDesc.Name;
 			p.bytes = varDesc.Size;
 			p.offset = varDesc.StartOffset;
-			p.elements = 1; // TODO: arrays		
+			p.elements = 1; // TODO: arrays
 
 			cbParameters.push_back(p);
 		}
@@ -127,15 +127,16 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			if (size % 16 != 0)
 				size = 16 * ((size / 16) + 1);
 		
-			D3D11_BUFFER_DESC bd{};
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.ByteWidth = size;
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.CPUAccessFlags = 0;
+			D3D11_BUFFER_DESC desc{};
+			desc.Usage = D3D11_USAGE_DYNAMIC;
+			desc.ByteWidth = size;
+			desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 			ICoreRender *coreRender = getCoreRender(_pCore);
 			DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
-			auto hr = dxRender->getDevice()->CreateBuffer(&bd, nullptr, dxBuffer.GetAddressOf());		
+
+			auto hr = dxRender->getDevice()->CreateBuffer(&desc, nullptr, dxBuffer.GetAddressOf());
 
 			_b->push_back(ConstantBufferPool.size());
 
@@ -144,7 +145,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 				_parameters[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
 			}
 
-			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));			
+			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));
 		}
 	}
 }
@@ -253,7 +254,13 @@ API DX11Shader::FlushParameters()
 			ConstantBuffer& cb = ConstantBufferPool[idx];
 			if (cb.needFlush)
 			{
-				ctx->UpdateSubresource(cb.dxBuffer.Get(), 0, nullptr, cb.data.get(), 0, 0);
+				D3D11_MAPPED_SUBRESOURCE mappedResource{};
+				ctx->Map(cb.dxBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+
+				memcpy(mappedResource.pData, cb.data.get(), cb.bytes);
+
+				ctx->Unmap(cb.dxBuffer.Get(), 0);
+
 				cb.needFlush = false;
 			}
 		}
