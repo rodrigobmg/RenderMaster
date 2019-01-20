@@ -248,11 +248,11 @@ API DX11CoreRender::Free()
 	LOG("DX11CoreRender::Free()");
 
 	// Debug
-	//{
-	//	ComPtr<ID3D11Debug> pDebug;
-	//	_device.As(&pDebug);
-	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);	
-	//}
+	{
+		ComPtr<ID3D11Debug> pDebug;
+		_device.As(&pDebug);
+		pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);	
+	}
 
 	_device = nullptr;
 

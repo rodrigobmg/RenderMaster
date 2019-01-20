@@ -19,6 +19,13 @@ STRUCT(VS_INPUT)
 	#endif
 END_STRUCT
 
+UNIFORM_BUFFER_BEGIN(viewport_parameters)
+	UNIFORM(uint, width)
+	UNIFORM(uint, height)
+	UNIFORM(float, invWidth)
+	UNIFORM(float, invHeight)
+UNIFORM_BUFFER_END
+
 STRUCT(Char)
 	vec4 data;
 	uint id;
@@ -31,19 +38,23 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
 	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
 
-	vec2 pos_ = pos * vec2(0.5f, 0.5f);
+	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [0, 1] x [0, 1]
+
+	float ww = 18.0f;
+	float hh = 22.0f;
+
+	vec2 pos_ = vec2(0.5f, 0.5f) + uv * vec2(2 *invWidth * (ww - 1), 2 *invHeight * (hh - 1));
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 
-	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f);
 	uv.y = 1.0f - uv.y;
 
 	uint id = buffer[0].id;
 	id = id - 32;
-	float x = float(id % 28u) * 18.0f;
-	float y = float(id / 28u) * 22.0f;
+	float x = float(id % 28u) * ww;
+	float y = float(id / 28u) * hh;
 
-	x += uv.x * 18.0f;
-	y += uv.y * 22.0f;
+	x += uv.x * (ww - 1.0f);
+	y += uv.y * (hh - 1.0f);
 
 	x = x / 512.0f;
 	y = y / 256.0f;

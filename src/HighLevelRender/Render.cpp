@@ -92,6 +92,12 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->SetShader(shader);
 		setShaderPostParameters(RENDER_PASS::FONT, shader);
 
+		shader->SetUintParameter("height", h);
+		shader->SetUintParameter("width", w);
+		shader->SetFloatParameter("invHeight", 1.0f / h);
+		shader->SetFloatParameter("invWidth", 1.0f / w);
+		shader->FlushParameters();
+
 		charr fontData[chars];
 
 		for (int i = 0; i < chars; i++)
@@ -381,7 +387,8 @@ void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader
 	if (pass == RENDER_PASS::ID)
 	{
 		shader->SetUintParameter("model_id", mesh->model_id);
-	} else if (pass == RENDER_PASS::FORWARD)
+	}
+	else if (pass == RENDER_PASS::FORWARD)
 	{
 		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));

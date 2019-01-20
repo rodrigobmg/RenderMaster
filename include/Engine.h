@@ -420,6 +420,7 @@ namespace RENDER_MASTER
 	class ICoreStructuredBuffer
 	{
 	public:
+		virtual ~ICoreStructuredBuffer() {}
 		virtual API SetData(uint8 *data, size_t size) = 0;
 		virtual API Reallocate(size_t newSize) = 0;
 	};
@@ -648,6 +649,8 @@ namespace RENDER_MASTER
 	class IStructuredBuffer : public IUnknown
 	{
 	public:
+		virtual ~IStructuredBuffer() {}
+
 		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
 		virtual API SetData(uint8 *data, size_t size) = 0;
 		virtual API Reallocate(size_t newSize) = 0;
