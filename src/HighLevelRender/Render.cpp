@@ -381,7 +381,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		renderTarget->SetColorTexture(0, buffers.color.Get());
 		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get()); _pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 		{
-			_pCoreRender->Draw(_postPlane.Get(), 1);
+			_pCoreRender->Draw(_postPlane.Get(), chars);
 		}
 		_pCoreRender->RestoreDefaultRenderTarget();
 

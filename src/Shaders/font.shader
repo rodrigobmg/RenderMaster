@@ -58,7 +58,7 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	float x = float(id % chars_in_row) * ww;
 	float y = float(id / chars_in_row) * hh;
 
-	x += uv.x * (widthPixels );
+	x += uv.x * (widthPixels +0.5f ); // 0.5 need???
 	y += uv.y * hh;
 
 	x = x / 512.0f;
@@ -90,8 +90,8 @@ MAIN_FRAG(VS_OUTPUT)
 
 	vec3 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).rgb;
 
-	//OUT_COLOR = vec4(tex, luma(tex));
-	OUT_COLOR = vec4(1,0,0,1);
+	OUT_COLOR = vec4(tex, luma(tex));
+	//OUT_COLOR = vec4(1,0,0,1);
 
 MAIN_FRAG_END
 
