@@ -38,7 +38,7 @@ class Render : public IRender
 	RenderTargetPtr renderTarget;
 	TexturePtr whiteTexture;
 
-	const char *txt = { "Hello" };
+	const char *txt = { "Hello world" };
 	TexturePtr fontTexture;
 	StructuredBufferPtr fontBuffer;
 

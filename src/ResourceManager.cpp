@@ -1308,16 +1308,42 @@ ICoreTexture* ResourceManager::loadDDS(const char *path, TEXTURE_CREATE_FLAGS fl
 		return nullptr;
 	}
 
+	unique_ptr<uint8[]> imageDataRempped;
+
 	// format
 	TEXTURE_FORMAT format = DDSToEngFormat(header->ddspf);
+
+	// Special case: RGB -> RGBA
+	if ((header->ddspf.flags & DDS_RGB) && header->ddspf.RGBBitCount == 24)
+	{
+		assert(imageSize % 3 == 0);
+		size_t alphaChannelSize = imageSize / 3;
+		size_t elements = header->width * header->height;
+
+		imageDataRempped = std::move(std::make_unique<uint8[]>(imageSize + alphaChannelSize));
+
+		uint8* ptr_src = imageData;
+		uint8* ptr_dst = imageDataRempped.get();
+
+		for (size_t i = 0u; i < elements; ++i)
+		{
+			memcpy(ptr_dst, ptr_dst, 3);
+			memset((ptr_dst + 3), 255, 1);
+
+			ptr_dst += 4;
+			ptr_src += 3;
+		}
+
+		imageData = imageDataRempped.get();
+		format = TEXTURE_FORMAT::RGBA8;
+	}
+
 	if (format == TEXTURE_FORMAT::UNKNOWN)
 	{
 		LOG_WARNING("ResourceManager::loadDDS(): format not supported");
 		return nullptr;
 	}
-	// TODO conversions:
-	// BGRA -> RGBA
-	// RGB -> RGBA
+
 
 	const TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
 

@@ -37,31 +37,32 @@ STRUCTURED_BUFFER_IN(0, buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
+	float ww = 32.0f;
+	float hh = 32.0f;
+	uint chars_in_row = 16u;
+	
 	float widthPixels = buffer[INSTANCE].data.x;
-	float offsetPixels = buffer[INSTANCE].data.y;
+	float offsetPixels = buffer[INSTANCE].data.y;	
 
 	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
 
 	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [0, 1] x [0, 1]
 
-	float ww = 18.0f;
-	float hh = 22.0f;
-
-	vec2 pos_ = vec2(2 * invWidth * offsetPixels, 0.0f) + uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
+	vec2 pos_ = vec2(0, -1) + vec2(2 * invWidth * offsetPixels, 0.0f) + uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 
 	uv.y = 1.0f - uv.y;
 
 	uint id = buffer[INSTANCE].id;
 	id = id - 32;
-	float x = float(id % 28u) * ww;
-	float y = float(id / 28u) * hh;
+	float x = float(id % chars_in_row) * ww;
+	float y = float(id / chars_in_row) * hh;
 
-	x += uv.x * widthPixels;
-	y += uv.y * (hh - 1.0f);
+	x += uv.x * (widthPixels );
+	y += uv.y * hh;
 
 	x = x / 512.0f;
-	y = y / 256.0f;
+	y = y / 512.0f;
 
 	#ifdef ENG_INPUT_TEXCOORD
 		OUT_ATTRIBUTE(TexCoord) = vec2(x, y);
@@ -76,15 +77,21 @@ MAIN_VERTEX_END
 // PIXEL SHADER
 ///////////////////////
 
+float luma(vec3 col)
+{
+	return 0.299*col.r + 0.587*col.g + 0.114*col.b;
+}
+
 #ifdef ENG_INPUT_TEXCOORD
 	TEXTURE2D_IN(0, TEX_ALBEDO)
 #endif
 
 MAIN_FRAG(VS_OUTPUT)
 
-	float tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).r;
+	vec3 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).rgb;
 
-	OUT_COLOR = vec4(1.0f, 1.0f, 1.0f, tex);
+	//OUT_COLOR = vec4(tex, luma(tex));
+	OUT_COLOR = vec4(1,0,0,1);
 
 MAIN_FRAG_END
 
