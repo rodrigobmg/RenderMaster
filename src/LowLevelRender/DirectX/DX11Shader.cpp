@@ -7,14 +7,14 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-extern vector<ConstantBuffer> ConstantBufferPool;
-
-ID3D11DeviceContext* getContext(Core *core)
+static ID3D11DeviceContext* getContext(Core *core)
 {
 	ICoreRender *coreRender = getCoreRender(_pCore);
 	DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
 	return dxRender->getContext();
 }
+
+extern vector<ConstantBuffer> ConstantBufferPool;
 
 void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 {

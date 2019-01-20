@@ -653,7 +653,9 @@ API DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructur
 	assert(size % 16 == 0);
 
 	D3D11_BUFFER_DESC desc = {};
-	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	desc.ByteWidth = size;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	desc.StructureByteStride = elementSize;
@@ -838,6 +840,27 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 		_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);	
 		_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
+	return S_OK;
+}
+
+API DX11CoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
+{
+	if (buffer)
+	{
+		ICoreStructuredBuffer *coreBuffer;
+		buffer->GetCoreBuffer(&coreBuffer);
+		DX11StructuredBuffer *dxBuffer = static_cast<DX11StructuredBuffer*>(coreBuffer);
+		ID3D11ShaderResourceView *srv = dxBuffer->SRV();
+
+		_context->VSSetShaderResources(slot, 1, &srv);
+		_context->PSSetShaderResources(slot, 1, &srv);
+	} else
+	{
+		ID3D11ShaderResourceView *srv = nullptr;
+		_context->VSSetShaderResources(slot, 1, &srv);
+		_context->PSSetShaderResources(slot, 1, &srv);
+	}
+
 	return S_OK;
 }
 

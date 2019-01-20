@@ -38,6 +38,10 @@
 	SamplerState _sampler_ ## SLOT :  register( s0 );
 #define TEXTURE(SLOT, UV) _texture_ ## SLOT.Sample(_sampler_ ## SLOT, UV)
 
+// Structured Buffer
+#define STRUCTURED_BUFFER_IN(SLOT, NAME, TYPE)\
+	StructuredBuffer<TYPE> NAME : register(t ## SLOT);
+
 // Vertex in/out
 #define IN_ATTRIBUTE(NAME) vs_input.NAME
 #define INIT_POSITION float4 position : SV_POSITION;

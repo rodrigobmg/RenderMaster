@@ -19,13 +19,38 @@ STRUCT(VS_INPUT)
 	#endif
 END_STRUCT
 
+STRUCT(Char)
+	vec4 data;
+	uint id;
+	vec3 dummy;
+END_STRUCT
+
+STRUCTURED_BUFFER_IN(0, buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
-	OUT_POSITION = vec4(IN_ATTRIBUTE(PositionIn).xy, 0.0f, 1.0f);
+	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
+
+	vec2 pos_ = pos * vec2(0.5f, 0.5f);
+	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
+
+	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f);
+	uv.y = 1.0f - uv.y;
+
+	uint id = buffer[0].id;
+	id = id - 32;
+	float x = float(id % 28u) * 18.0f;
+	float y = float(id / 28u) * 22.0f;
+
+	x += uv.x * 18.0f;
+	y += uv.y * 22.0f;
+
+	x = x / 512.0f;
+	y = y / 256.0f;
 
 	#ifdef ENG_INPUT_TEXCOORD
-		OUT_ATTRIBUTE(TexCoord) = IN_ATTRIBUTE(TexCoordIn);
+		OUT_ATTRIBUTE(TexCoord) = vec2(x, y);
+		//OUT_ATTRIBUTE(TexCoord) = IN_ATTRIBUTE(TexCoordIn);
 	#endif
 
 MAIN_VERTEX_END

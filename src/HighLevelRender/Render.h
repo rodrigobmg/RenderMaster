@@ -37,8 +37,9 @@ class Render : public IRender
 	MeshPtr _postPlane;
 	RenderTargetPtr renderTarget;
 	TexturePtr whiteTexture;
-	TexturePtr fontTexture;
 
+	const char *txt = { "Hello" };
+	TexturePtr fontTexture;
 	StructuredBufferPtr fontBuffer;
 
 	struct TexturePoolable

@@ -263,6 +263,7 @@ mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar);
 int getRandomInt();
 
 // subsystem
+
 inline IResourceManager *getResourceManager(ICore *core)
 {
 	IResourceManager *ret;

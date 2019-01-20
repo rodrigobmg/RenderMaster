@@ -11,6 +11,8 @@ public:
 	DX11StructuredBuffer(ID3D11Buffer *bufIn, ID3D11ShaderResourceView *srvIn);
 	virtual ~DX11StructuredBuffer();
 
+	ID3D11ShaderResourceView *SRV() const { return srv; }
+
 	API SetData(uint8 *data, size_t size) override;
 	API Reallocate(size_t newSize) override;
 };

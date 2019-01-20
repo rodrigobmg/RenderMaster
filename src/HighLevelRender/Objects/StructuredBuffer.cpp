@@ -16,6 +16,12 @@ StructuredBuffer::~StructuredBuffer()
 	_coreStructuredBuffer = nullptr;
 }
 
+API StructuredBuffer::GetCoreBuffer(ICoreStructuredBuffer **bufOut)
+{
+	*bufOut = _coreStructuredBuffer;
+	return S_OK;
+}
+
 API StructuredBuffer::SetData(uint8 * data, size_t size)
 {
 	_coreStructuredBuffer->SetData(data, size);

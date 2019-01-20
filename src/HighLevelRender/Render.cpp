@@ -12,6 +12,15 @@ DEFINE_LOG_HELPERS(_pCore)
 // Render
 /////////////////////////
 
+struct charr
+{
+	float data[4];
+	uint32_t id;
+	float dummy[3];
+};
+constexpr uint chars = 5u;
+constexpr uint ss = sizeof(charr);
+
 void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 {
 	renderTarget->SetColorTexture(0, buffers.colorHDR.Get());
@@ -83,6 +92,16 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->SetShader(shader);
 		setShaderPostParameters(RENDER_PASS::FONT, shader);
 
+		charr fontData[chars];
+
+		for (int i = 0; i < chars; i++)
+		{
+			fontData[i].id = static_cast<uint>(txt[i]);
+		}
+
+		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
+
+		_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
 		_pCoreRender->BindTexture(0, fontTexture.Get());
 
 		_pCoreRender->SetBlendState(BLEND_FACTOR::SRC_ALPHA, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
@@ -96,6 +115,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->RestoreDefaultRenderTarget();
 
 		_pCoreRender->UnbindAllTextures();
+		_pCoreRender->SetStructuredBufer(0, nullptr);
 
 		_pCoreRender->SetDepthTest(1);
 		_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
@@ -450,9 +470,9 @@ void Render::releaseBuffers(RenderBuffers& buffers)
 	releaseTexture2d(buffers.color.Get());		buffers.color = nullptr;
 	releaseTexture2d(buffers.colorHDR.Get());	buffers.colorHDR = nullptr;
 	releaseTexture2d(buffers.depth.Get());		buffers.depth = nullptr;
-	releaseTexture2d(buffers.directLight.Get());	buffers.directLight = nullptr;
+	releaseTexture2d(buffers.directLight.Get());buffers.directLight = nullptr;
 	releaseTexture2d(buffers.normal.Get());		buffers.normal = nullptr;
-	releaseTexture2d(buffers.shading.Get());		buffers.shading = nullptr;
+	releaseTexture2d(buffers.shading.Get());	buffers.shading = nullptr;
 	releaseTexture2d(buffers.id.Get());			buffers.id = nullptr;
 }
 
@@ -488,10 +508,9 @@ void Render::Init()
 	_pResMan->LoadTextFile(&shader, "font.shader");
 	_fontShader =  WRL::ComPtr<ITextFile>(shader);
 
-	const char txt[] = "Hello";
-	auto ss = 16u;
+
 	IStructuredBuffer *sb;
-	_pResMan->CreateStructuredBuffer(&sb, sizeof(txt) * ss, ss);
+	_pResMan->CreateStructuredBuffer(&sb, chars * ss, ss);
 	fontBuffer = StructuredBufferPtr(sb);
 
 	// Render Targets

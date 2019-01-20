@@ -70,6 +70,7 @@ namespace RENDER_MASTER
 	class IRenderTarget;
 	class IMesh;
 	class IConstantBuffer;
+	class IStructuredBuffer;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
@@ -462,6 +463,7 @@ namespace RENDER_MASTER
 		virtual API RestoreDefaultRenderTarget() = 0;
 		virtual API SetShader(IShader *pShader) = 0;
 		virtual API SetMesh(IMesh* mesh) = 0;
+		virtual API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) = 0;
 		virtual API Draw(IMesh *mesh) = 0;
 		virtual API SetDepthTest(int enabled) = 0;
 		virtual API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) = 0;
@@ -646,6 +648,7 @@ namespace RENDER_MASTER
 	class IStructuredBuffer : public IUnknown
 	{
 	public:
+		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
 		virtual API SetData(uint8 *data, size_t size) = 0;
 		virtual API Reallocate(size_t newSize) = 0;
 

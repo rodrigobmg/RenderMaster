@@ -832,6 +832,11 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 	return S_OK;
 }
 
+API GLCoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
+{
+	return S_OK;
+}
+
 API GLCoreRender::BindTexture(uint slot, ITexture *texture)
 {
 	assert(slot < MAX_TEXTURE_SLOTS);

@@ -164,6 +164,7 @@ public:
 	API UnbindAllTextures() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
+	API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) override;
 	API Draw(IMesh *mesh) override;
 	API SetDepthTest(int enabled) override;
 	API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) override;
