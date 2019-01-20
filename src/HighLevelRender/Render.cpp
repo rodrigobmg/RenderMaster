@@ -21,6 +21,261 @@ struct charr
 constexpr uint chars = 5u;
 constexpr uint ss = sizeof(charr);
 
+uint widths[256] = { 0, 10, 7
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,0
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,10
+,4
+,4
+,6
+,9
+,8
+,12
+,12
+,3
+,5
+,5
+,6
+,10
+,3
+,6
+,3
+,6
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,3
+,3
+,10
+,10
+,10
+,7
+,14
+,10
+,9
+,9
+,11
+,8
+,7
+,10
+,11
+,4
+,5
+,9
+,7
+,13
+,11
+,11
+,8
+,11
+,9
+,8
+,8
+,10
+,9
+,14
+,9
+,8
+,9
+,5
+,6
+,5
+,10
+,6
+,4
+,8
+,9
+,7
+,9
+,8
+,5
+,9
+,8
+,4
+,4
+,7
+,4
+,13
+,8
+,9
+,9
+,9
+,5
+,6
+,5
+,8
+,7
+,11
+,7
+,7
+,7
+,5
+,4
+,5
+,10
+,4
+,11
+,7
+,3
+,6
+,6
+,11
+,6
+,6
+,8
+,18
+,15
+,5
+,15
+,9
+,11
+,11
+,9
+,3
+,3
+,6
+,6
+,6
+,8
+,15
+,10
+,12
+,12
+,5
+,12
+,7
+,9
+,9
+,4
+,9
+,7
+,5
+,8
+,7
+,4
+,7
+,8
+,13
+,9
+,8
+,10
+,6
+,13
+,4
+,6
+,10
+,4
+,4
+,6
+,9
+,7
+,3
+,8
+,17
+,7
+,8
+,4
+,8
+,6
+,4
+,10
+,9
+,9
+,7
+,10
+,8
+,13
+,8
+,11
+,11
+,9
+,10
+,13
+,11
+,11
+,11
+,8
+,9
+,8
+,9
+,11
+,9
+,11
+,10
+,14
+,15
+,11
+,12
+,9
+,9
+,15
+,9
+,8
+,9
+,8
+,6
+,8
+,8
+,11
+,7
+,9
+,9
+,7
+,8
+,11
+,9
+,9
+,9
+,9
+,7
+,6
+,7
+,10
+,7
+,9
+,8
+,12
+,12
+,9
+,11
+,8
+,7
+,12
+, 8 };
+
 void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 {
 	renderTarget->SetColorTexture(0, buffers.colorHDR.Get());
@@ -100,9 +355,16 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		charr fontData[chars];
 
-		for (int i = 0; i < chars; i++)
+		string fps = std::to_string(_pCore->getFPS());
+
+		float offset = 0.0f;
+		for (size_t i = 0u; i < fps.size(); i++)
 		{
-			fontData[i].id = static_cast<uint>(txt[i]);
+			float w = static_cast<float>(widths[fps[i]]);
+			fontData[i].data[0] = w;
+			fontData[i].data[1] = offset;
+			fontData[i].id = static_cast<uint>(fps[i]);
+			offset += w;
 		}
 
 		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
@@ -116,7 +378,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		renderTarget->SetColorTexture(0, buffers.color.Get());
 		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get()); _pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 		{
-			_pCoreRender->Draw(_postPlane.Get());
+			_pCoreRender->Draw(_postPlane.Get(), fps.size());
 		}
 		_pCoreRender->RestoreDefaultRenderTarget();
 

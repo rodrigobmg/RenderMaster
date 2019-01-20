@@ -927,7 +927,7 @@ API DX11CoreRender::UnbindAllTextures()
 	return S_OK;
 }
 
-API DX11CoreRender::Draw(IMesh* mesh)
+API DX11CoreRender::Draw(IMesh* mesh, uint instances)
 {
 	assert(_state.shader.Get() && "DX11CoreRender::Draw(): shader not set");
 
@@ -936,10 +936,20 @@ API DX11CoreRender::Draw(IMesh* mesh)
 
 	DX11Mesh *dxMesh = getDX11Mesh(mesh);
 
-	if (dxMesh->indexBuffer())
-		_context->DrawIndexed(dxMesh->indexNumber(), 0, 0);
+	if (instances > 1)
+	{
+		if (dxMesh->indexBuffer())
+			_context->DrawIndexedInstanced(dxMesh->indexNumber(), instances, 0, 0, 0);
+		else
+			_context->DrawInstanced(dxMesh->vertexNumber(), instances, 0, 0);
+	}
 	else
-		_context->Draw(dxMesh->vertexNumber(), 0);
+	{
+		if (dxMesh->indexBuffer())
+			_context->DrawIndexed(dxMesh->indexNumber(), 0, 0);
+		else
+			_context->Draw(dxMesh->vertexNumber(), 0);
+	}
 
 	return S_OK;
 }

@@ -45,10 +45,11 @@ class Core : public ICore
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	void _set_window_caption(int is_paused, int fps);
 
-	int windowActive = 1;	
+	int windowActive = 1;
 
 	int64_t _frame = 0;
 	float dt = 0.0f;
+	int fps = 0;
 
 public:
 
@@ -66,6 +67,7 @@ public:
 	MainWindow* mainWindow() { return _pMainWindow.get(); }
 	void AddUpdateCallback(std::function<void()>&& calback) { _updateCallbacks.push_back(std::forward<std::function<void()>>(calback)); }
 	float getDt() { return dt; }
+	int getFPS() { return fps; }
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
 	Console *getConsoole() { return _pConsole.get(); }
 	int64_t frame() { return _frame; }

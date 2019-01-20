@@ -42,6 +42,9 @@
 #define STRUCTURED_BUFFER_IN(SLOT, NAME, TYPE)\
 	StructuredBuffer<TYPE> NAME : register(t ## SLOT);
 
+#define INSTANCE_IN uint instance : SV_INSTANCEID;
+#define INSTANCE vs_input.instance
+
 // Vertex in/out
 #define IN_ATTRIBUTE(NAME) vs_input.NAME
 #define INIT_POSITION float4 position : SV_POSITION;
@@ -60,16 +63,16 @@ VERTEX_OUT vs_output;
 } \
 
 struct PixelShaderOutputFloat4
-{          
-	float4 color : SV_Target0;   
+{
+	float4 color : SV_Target0;
 };
 #define MAIN_FRAG(FRAG_IN) PixelShaderOutputFloat4 mainFS(FRAG_IN fs_input) \
 { \
 PixelShaderOutputFloat4 out_color;
 
 struct PixelShaderOutputUint
-{          
-	uint color : SV_Target0;   
+{
+	uint color : SV_Target0;
 };
 #define MAIN_FRAG_UI(FRAG_IN) PixelShaderOutputUint mainFS(FRAG_IN fs_input) \
 { \

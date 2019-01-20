@@ -17,6 +17,7 @@ STRUCT(VS_INPUT)
 	#ifdef ENG_INPUT_TEXCOORD
 		ATTRIBUTE_VERETX_IN(2, vec2, TexCoordIn, TEXCOORD2)
 	#endif
+	INSTANCE_IN
 END_STRUCT
 
 UNIFORM_BUFFER_BEGIN(viewport_parameters)
@@ -36,6 +37,9 @@ STRUCTURED_BUFFER_IN(0, buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
+	float widthPixels = buffer[INSTANCE].data.x;
+	float offsetPixels = buffer[INSTANCE].data.y;
+
 	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
 
 	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [0, 1] x [0, 1]
@@ -43,17 +47,17 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	float ww = 18.0f;
 	float hh = 22.0f;
 
-	vec2 pos_ = vec2(0.5f, 0.5f) + uv * vec2(2 *invWidth * (ww - 1), 2 *invHeight * (hh - 1));
+	vec2 pos_ = vec2(2 * invWidth * offsetPixels, 0.0f) + uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 
 	uv.y = 1.0f - uv.y;
 
-	uint id = buffer[0].id;
+	uint id = buffer[INSTANCE].id;
 	id = id - 32;
 	float x = float(id % 28u) * ww;
 	float y = float(id / 28u) * hh;
 
-	x += uv.x * (ww - 1.0f);
+	x += uv.x * widthPixels;
 	y += uv.y * (hh - 1.0f);
 
 	x = x / 512.0f;

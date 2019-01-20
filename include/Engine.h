@@ -465,7 +465,7 @@ namespace RENDER_MASTER
 		virtual API SetShader(IShader *pShader) = 0;
 		virtual API SetMesh(IMesh* mesh) = 0;
 		virtual API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) = 0;
-		virtual API Draw(IMesh *mesh) = 0;
+		virtual API Draw(IMesh *mesh, uint instances = 1u) = 0;
 		virtual API SetDepthTest(int enabled) = 0;
 		virtual API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;

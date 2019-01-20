@@ -370,8 +370,8 @@ float Core::update_fps()
 	if (accum > upd_interv)
 	{
 		accum = 0.0f;
-		int fps = static_cast<int>(1.0f / dt);
-		_set_window_caption(0, fps);		
+		fps = static_cast<int>(1.0f / dt);
+		_set_window_caption(0, fps);
 	}
 
 	start = std::chrono::steady_clock::now();

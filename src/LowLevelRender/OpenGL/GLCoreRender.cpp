@@ -884,7 +884,7 @@ API GLCoreRender::UnbindAllTextures()
 	return S_OK;
 }
 
-API GLCoreRender::Draw(IMesh *mesh)
+API GLCoreRender::Draw(IMesh *mesh, uint instances)
 {
 	assert(_state.shader.Get() && "GLCoreRender::Draw(): shader not set");
 
