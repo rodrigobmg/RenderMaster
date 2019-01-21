@@ -178,6 +178,7 @@ void Core::_main_loop()
 	_pSceneManager->GetDefaultCamera(&cam);
 
 	_pRender->RenderFrame(cam);
+	_pRender->RenderPassGUI();
 	_pCoreRender->SwapBuffers();
 }
 

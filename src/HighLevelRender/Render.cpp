@@ -301,7 +301,6 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 
 	IShader *shader = getShader({attribs, RENDER_PASS::ENGINE_POST});
 	_pCoreRender->SetShader(shader);
-	setShaderPostParameters(RENDER_PASS::ENGINE_POST, shader);
 
 	_pCoreRender->BindTexture(0, buffers.colorHDR.Get());
 
@@ -342,55 +341,6 @@ void Render::RenderFrame(const ICamera *pCamera)
 	//
 	renderEnginePost(buffers);
 
-	{
-		INPUT_ATTRUBUTE attribs;
-		_postPlane->GetAttributes(&attribs);
-
-		IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
-		_pCoreRender->SetShader(shader);
-		setShaderPostParameters(RENDER_PASS::FONT, shader);
-
-		shader->SetUintParameter("height", h);
-		shader->SetUintParameter("width", w);
-		shader->SetFloatParameter("invHeight", 1.0f / h);
-		shader->SetFloatParameter("invWidth", 1.0f / w);
-		shader->FlushParameters();
-
-		charr fontData[chars];
-
-		string fps = std::to_string(_pCore->getFPS());
-
-		float offset = 0.0f;
-		for (size_t i = 0u; i < chars; i++)
-		{
-			float w = static_cast<float>(widths[txt[i]]);
-			fontData[i].data[0] = w;
-			fontData[i].data[1] = offset;
-			fontData[i].id = static_cast<uint>(txt[i]);
-			offset += (w );
-		}
-
-		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
-
-		_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
-		_pCoreRender->BindTexture(0, fontTexture.Get());
-
-		_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
-		_pCoreRender->SetDepthTest(0);
-
-		renderTarget->SetColorTexture(0, buffers.color.Get());
-		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get()); _pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
-		{
-			_pCoreRender->Draw(_postPlane.Get(), chars);
-		}
-		_pCoreRender->RestoreDefaultRenderTarget();
-
-		_pCoreRender->UnbindAllTextures();
-		_pCoreRender->SetStructuredBufer(0, nullptr);
-
-		_pCoreRender->SetDepthTest(1);
-		_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-	}
 
 #if 0
 	///////////////////////////////
@@ -475,8 +425,56 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	return S_OK;
 }
 
-void Render::setShaderPostParameters(RENDER_PASS pass, IShader *shader)
+API Render::RenderPassGUI()
 {
+	{
+		INPUT_ATTRUBUTE attribs;
+		_postPlane->GetAttributes(&attribs);
+
+		IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
+		_pCoreRender->SetShader(shader);
+
+		uint w, h;
+		_pCoreRender->GetViewport(&w, &h);
+
+		shader->SetUintParameter("height", h);
+		shader->SetUintParameter("width", w);
+		shader->SetFloatParameter("invHeight", 1.0f / h);
+		shader->SetFloatParameter("invWidth", 1.0f / w);
+		shader->FlushParameters();
+
+		charr fontData[chars];
+
+		string fps = std::to_string(_pCore->getFPS());
+
+		float offset = 0.0f;
+		for (size_t i = 0u; i < chars; i++)
+		{
+			float w = static_cast<float>(widths[txt[i]]);
+			fontData[i].data[0] = w;
+			fontData[i].data[1] = offset;
+			fontData[i].id = static_cast<uint>(txt[i]);
+			offset += (w);
+		}
+
+		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
+
+		_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
+		_pCoreRender->BindTexture(0, fontTexture.Get());
+
+		_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
+		_pCoreRender->SetDepthTest(0);
+
+		_pCoreRender->Draw(_postPlane.Get(), chars);
+
+		_pCoreRender->UnbindAllTextures();
+		_pCoreRender->SetStructuredBufer(0, nullptr);
+
+		_pCoreRender->SetDepthTest(1);
+		_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+	}
+
+	return S_OK;
 }
 
 void Render::_update()

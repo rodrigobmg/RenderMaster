@@ -512,6 +512,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 		virtual API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
+		virtual API RenderPassGUI() = 0;
 		virtual API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
 		virtual API ReleaseRenderTexture2D(ITexture *texIn) = 0;
 		virtual API ShadersReload() = 0;

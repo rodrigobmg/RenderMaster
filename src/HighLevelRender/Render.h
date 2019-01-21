@@ -70,7 +70,6 @@ class Render : public IRender
 	void renderEnginePost(RenderBuffers& buffers);
 
 	void setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader);
-	void setShaderPostParameters(RENDER_PASS pass, IShader *shader);
 
 	void drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass);
 
@@ -96,6 +95,7 @@ public:
 
 	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;
+	API RenderPassGUI() override;
 	API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) override;
 	API ReleaseRenderTexture2D(ITexture *texIn) override;
 	API ShadersReload() override;
