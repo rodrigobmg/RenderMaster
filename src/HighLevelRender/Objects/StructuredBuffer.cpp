@@ -30,6 +30,20 @@ API StructuredBuffer::SetData(uint8 * data, size_t size)
 
 API StructuredBuffer::Reallocate(size_t newSize)
 {
-	_coreStructuredBuffer->Reallocate(newSize);
+	uint size;
+	_coreStructuredBuffer->GetSize(&size);
+
+	uint elementSize;
+	_coreStructuredBuffer->GetElementSize(&elementSize);
+
+	if (newSize <= size)
+		return S_OK;
+
+	delete _coreStructuredBuffer;
+
+	ICoreRender *render = getCoreRender(_pCore);
+
+	ThrowIfFailed(render->CreateStructuredBuffer(&_coreStructuredBuffer, size, elementSize));
+
 	return S_OK;
 }

@@ -457,6 +457,7 @@ API Render::RenderPassGUI()
 			offset += (w);
 		}
 
+		fontBuffer->Reallocate(400);
 		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
 
 		_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());

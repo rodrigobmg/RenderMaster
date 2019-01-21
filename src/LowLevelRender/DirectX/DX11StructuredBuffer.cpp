@@ -16,9 +16,10 @@ static ID3D11DeviceContext* getContext(Core *core)
 
 DX11StructuredBuffer::DX11StructuredBuffer(ID3D11Buffer *bufIn, ID3D11ShaderResourceView *srvIn) : buf(bufIn), srv(srvIn)
 {
-	D3D11_BUFFER_DESC descBuf = {};
-	bufIn->GetDesc(&descBuf);
-	size = descBuf.ByteWidth;
+	D3D11_BUFFER_DESC desc;
+	bufIn->GetDesc(&desc);
+	size = desc.ByteWidth;
+	elementSize = desc.StructureByteStride;
 }
 
 DX11StructuredBuffer::~DX11StructuredBuffer()
@@ -26,6 +27,7 @@ DX11StructuredBuffer::~DX11StructuredBuffer()
 	if (buf) { buf->Release(); buf = nullptr; }
 	if (srv) { srv->Release(); srv = nullptr; }
 	size = 0u;
+	elementSize = 0u;
 }
 
 API DX11StructuredBuffer::SetData(uint8 *data, size_t size)
@@ -41,13 +43,15 @@ API DX11StructuredBuffer::SetData(uint8 *data, size_t size)
 	return S_OK;
 }
 
-API DX11StructuredBuffer::Reallocate(size_t newSize)
+API DX11StructuredBuffer::GetSize(OUT uint *sizeOut)
 {
-	if (newSize == size)
-		return S_OK;
-
-	if (buf) { buf->Release(); buf = nullptr; }
-	if (srv) { srv->Release(); srv = nullptr; }
-
+	*sizeOut = size;
 	return S_OK;
 }
+
+API DX11StructuredBuffer::GetElementSize(OUT uint *sizeOut)
+{
+	*sizeOut = elementSize;
+	return S_OK;
+}
+

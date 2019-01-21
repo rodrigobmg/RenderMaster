@@ -422,7 +422,8 @@ namespace RENDER_MASTER
 	public:
 		virtual ~ICoreStructuredBuffer() {}
 		virtual API SetData(uint8 *data, size_t size) = 0;
-		virtual API Reallocate(size_t newSize) = 0;
+		virtual API GetSize(OUT uint *size) = 0;
+		virtual API GetElementSize(OUT uint *size) = 0;
 	};
 
 	enum class BLEND_FACTOR
