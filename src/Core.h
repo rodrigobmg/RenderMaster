@@ -18,7 +18,7 @@ class Core : public ICore
 	string _pInstalledDir;
 
 	// subsystems
-	unique_ptr<Console> _pConsole;
+	unique_ptr<Console> _pConsoleWindow;
 	unique_ptr<MainWindow> _pMainWindow;
 	unique_ptr<FileSystem>_pfSystem;
 	unique_ptr<ResourceManager> _pResMan;
@@ -35,26 +35,26 @@ class Core : public ICore
 	long _lRef{0};
 
 	std::chrono::steady_clock::time_point start;
+	int64_t _frame = 0;
+	float _dt = 0.0f;
+	int _fps = 0;
 
 	void _internal_update();
 	void _update();
-	float update_fps();
+	float _update_fps();
 	void _main_loop();
 	void static _s_main_loop();
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	void _set_window_caption(int is_paused, int fps);
 
-	int windowActive = 1;
-
-	int64_t _frame = 0;
-	float dt = 0.0f;
-	int fps = 0;
-
 public:
 
 	Core(const mchar *workingDir, const mchar *installedDir);
 	virtual ~Core();
+
+	MainWindow* mainWindow() { return _pMainWindow.get(); }
+	Console *consoleWindow() { return _pConsoleWindow.get(); }
 
 	template <typename... Arguments>
 	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ...args)
@@ -64,13 +64,13 @@ public:
 		sprintf(buf, pStr, args...);
 		Log(buf, type);
 	}
-	MainWindow* mainWindow() { return _pMainWindow.get(); }
-	void AddUpdateCallback(std::function<void()>&& calback) { _updateCallbacks.push_back(std::forward<std::function<void()>>(calback)); }
-	float getDt() { return dt; }
-	int getFPS() { return fps; }
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
-	Console *getConsoole() { return _pConsole.get(); }
-	int64_t frame() { return _frame; }
+
+	void AddUpdateCallback(std::function<void()>&& calback) { _updateCallbacks.push_back(std::forward<std::function<void()>>(calback)); }
+
+	float deltaTime() const	{ return _dt; }
+	int FPS() const			{ return _fps; }
+	int64_t frame() const	{ return _frame; }
 
 	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) override;
 	API Start() override;

@@ -18,8 +18,11 @@ struct charr
 	uint32_t id;
 	float dummy[3];
 };
-constexpr uint chars = 11u;
+constexpr char txt_c[] = "abcdefg 1234567890!";
+string txt = txt_c;
+constexpr auto chars = sizeof(txt_c) - 1;
 constexpr uint ss = sizeof(charr);
+size_t txt_hash;
 
 uint widths[256] = {
 0
@@ -427,53 +430,57 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 
 API Render::RenderPassGUI()
 {
+	INPUT_ATTRUBUTE attribs;
+	_postPlane->GetAttributes(&attribs);
+
+	IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
+	_pCoreRender->SetShader(shader);
+
+	uint w, h;
+	_pCoreRender->GetViewport(&w, &h);
+
+	shader->SetUintParameter("height", h);
+	shader->SetUintParameter("width", w);
+	shader->SetFloatParameter("invHeight", 1.0f / h);
+	shader->SetFloatParameter("invWidth", 1.0f / w);
+	shader->FlushParameters();
+
+	charr fontData[chars];
+
+	string fps = std::to_string(_pCore->FPS());
+
+	float offset = 0.0f;
+	for (size_t i = 0u; i < chars; i++)
 	{
-		INPUT_ATTRUBUTE attribs;
-		_postPlane->GetAttributes(&attribs);
-
-		IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
-		_pCoreRender->SetShader(shader);
-
-		uint w, h;
-		_pCoreRender->GetViewport(&w, &h);
-
-		shader->SetUintParameter("height", h);
-		shader->SetUintParameter("width", w);
-		shader->SetFloatParameter("invHeight", 1.0f / h);
-		shader->SetFloatParameter("invWidth", 1.0f / w);
-		shader->FlushParameters();
-
-		charr fontData[chars];
-
-		string fps = std::to_string(_pCore->getFPS());
-
-		float offset = 0.0f;
-		for (size_t i = 0u; i < chars; i++)
-		{
-			float w = static_cast<float>(widths[txt[i]]);
-			fontData[i].data[0] = w;
-			fontData[i].data[1] = offset;
-			fontData[i].id = static_cast<uint>(txt[i]);
-			offset += (w);
-		}
-
-		fontBuffer->Reallocate(400);
-		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
-
-		_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
-		_pCoreRender->BindTexture(0, fontTexture.Get());
-
-		_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
-		_pCoreRender->SetDepthTest(0);
-
-		_pCoreRender->Draw(_postPlane.Get(), chars);
-
-		_pCoreRender->UnbindAllTextures();
-		_pCoreRender->SetStructuredBufer(0, nullptr);
-
-		_pCoreRender->SetDepthTest(1);
-		_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+		float w = static_cast<float>(widths[txt[i]]);
+		fontData[i].data[0] = w;
+		fontData[i].data[1] = offset;
+		fontData[i].id = static_cast<uint>(txt[i]);
+		offset += w;
 	}
+	
+	std::hash<string> hash_fn;
+	auto new_hash = hash_fn(txt);
+	if (new_hash != txt_hash)
+	{
+		txt_hash = new_hash;
+		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
+	}
+
+	_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
+	_pCoreRender->BindTexture(0, fontTexture.Get());
+
+	_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
+	_pCoreRender->SetDepthTest(0);
+
+	_pCoreRender->Draw(_postPlane.Get(), chars);
+
+	_pCoreRender->UnbindAllTextures();
+	_pCoreRender->SetStructuredBufer(0, nullptr);
+
+	_pCoreRender->SetDepthTest(1);
+	_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+
 
 	return S_OK;
 }

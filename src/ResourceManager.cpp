@@ -440,7 +440,7 @@ ResourceManager::ResourceManager()
 	const char *pString = nullptr;
 	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
-	_pCore->getConsoole()->addCommand("resources_list", std::bind(&ResourceManager::resources_list, this, std::placeholders::_1, std::placeholders::_2));
+	_pCore->consoleWindow()->addCommand("resources_list", std::bind(&ResourceManager::resources_list, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 ResourceManager::~ResourceManager()

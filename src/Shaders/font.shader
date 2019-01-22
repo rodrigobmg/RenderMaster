@@ -42,13 +42,13 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	uint chars_in_row = 16u;
 	
 	float widthPixels = buffer[INSTANCE].data.x;
-	float offsetPixels = buffer[INSTANCE].data.y;	
+	float offsetPixels = buffer[INSTANCE].data.y;
 
 	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
 
 	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [0, 1] x [0, 1]
 
-	vec2 pos_ = vec2(0, 0) + vec2(2 * invWidth * offsetPixels, 0.0f) + uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
+	vec2 pos_ = vec2(-1, 0) + vec2(2 * invWidth * offsetPixels, 0.0f) + uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 
 	uv.y = 1.0f - uv.y;

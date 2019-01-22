@@ -38,7 +38,6 @@ class Render : public IRender
 	RenderTargetPtr renderTarget;
 	TexturePtr whiteTexture;
 
-	const char *txt = { "Hello world" };
 	TexturePtr fontTexture;
 	StructuredBufferPtr fontBuffer;
 
@@ -68,13 +67,9 @@ class Render : public IRender
 
 	void renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes);
 	void renderEnginePost(RenderBuffers& buffers);
-
 	void setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader);
-
 	void drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass);
-
 	void _update();
-	
 	IShader* getShader(const ShaderRequirement &req);
 	bool isOpenGL();
 	void getRenderMeshes(vector<RenderMesh>& meshes);	

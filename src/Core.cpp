@@ -17,6 +17,7 @@ Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+static const float FPS_UPDATE_INTERVAL = 0.3f;
 
 Core::Core(const mchar *pWorkingDir, const mchar *pInstalledDir)
 {
@@ -28,7 +29,7 @@ Core::Core(const mchar *pWorkingDir, const mchar *pInstalledDir)
 	_pInstalledDir = NativeToUTF8(pInstalledDir);
 
 	_pfSystem = std::make_unique<FileSystem>();
-	_pConsole = std::make_unique<Console>();
+	_pConsoleWindow = std::make_unique<Console>();
 	_pResMan = std::make_unique<ResourceManager>();
 }
 
@@ -53,7 +54,7 @@ API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* ext
 	}
 
 	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
-	_pConsole->Init(createConsole);
+	_pConsoleWindow->Init(createConsole);
 
 	Log("Start initialization engine...");
 	LogFormatted("Working directory:    %s", LOG_TYPE::NORMAL, _pWorkingDir.c_str());
@@ -161,7 +162,7 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 		case SUBSYSTEM_TYPE::INPUT: *pSubSystem = _pInput.get(); break;
 		case SUBSYSTEM_TYPE::SCENE_MANAGER: *pSubSystem = _pSceneManager.get(); break;
 		case SUBSYSTEM_TYPE::RENDER: *pSubSystem = _pRender.get(); break;
-		case SUBSYSTEM_TYPE::CONSOLE: *pSubSystem = _pConsole.get(); break;
+		case SUBSYSTEM_TYPE::CONSOLE: *pSubSystem = _pConsoleWindow.get(); break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
 			return E_FAIL;
@@ -200,15 +201,15 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 	case WINDOW_MESSAGE::WINDOW_UNMINIMIZED:
 		if (_pMainWindow)
 			_pMainWindow->SetPassiveMainLoop(0);
-		if (_pConsole)
-			_pConsole->Show();
+		if (_pConsoleWindow)
+			_pConsoleWindow->Show();
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_MINIMIZED:
 		if (_pMainWindow)
 			_pMainWindow->SetPassiveMainLoop(1);
-		if (_pConsole)
-			_pConsole->Hide();
+		if (_pConsoleWindow)
+			_pConsoleWindow->Hide();
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_REDRAW:
@@ -231,8 +232,8 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_CLOSE:
-		if (_pConsole)
-			_pConsole->BringToFront();
+		if (_pConsoleWindow)
+			_pConsoleWindow->BringToFront();
 		break;
 
 	default:
@@ -283,7 +284,7 @@ API Core::GetInstalledDir(OUT const char **pStr)
 
 void Core::Log(const char *pStr, LOG_TYPE type)
 {
-	_pConsole->Log(pStr, type);
+	_pConsoleWindow->Log(pStr, type);
 }
 
 API Core::AddInitCallback(IInitCallback* pCallback)
@@ -324,15 +325,15 @@ API Core::ReleaseEngine()
 
 	Log("Engine closed");
 
-	if (_pConsole)
-		_pConsole->Destroy();
+	if (_pConsoleWindow)
+		_pConsoleWindow->Destroy();
 
 	return S_OK;
 }
 
 void Core::_internal_update()
 {
-	update_fps();
+	_update_fps();
 
 	for (auto &callback : _updateCallbacks)
 		callback();
@@ -342,7 +343,7 @@ void Core::_internal_update()
 
 void Core::_update()
 {
-	if (!_pConsole)
+	if (!_pConsoleWindow)
 		return;
 
 	static int tilda = 0;
@@ -350,34 +351,34 @@ void Core::_update()
 	_pInput->IsKeyPressed(&tilda, KEYBOARD_KEY_CODES::KEY_GRAVE);
 	if (tilda_old && !tilda)
 	{
-		int is_visible = _pConsole->IsVisible();
+		int is_visible = _pConsoleWindow->IsVisible();
 		if (is_visible)
-			_pConsole->Hide();
+			_pConsoleWindow->Hide();
 		else
-			_pConsole->Show();
+			_pConsoleWindow->Show();
 	}
 }
 
-float Core::update_fps()
+float Core::_update_fps()
 {
-	static const float upd_interv = 0.3f;
 	static float accum = 0.0f;
 
 	std::chrono::duration<float> _durationSec = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start);
-	dt = _durationSec.count();
 
-	accum += dt;
+	_dt = _durationSec.count();
+	_fps = static_cast<int>(1.0f / _dt);
 
-	if (accum > upd_interv)
+	accum += _dt;
+
+	if (accum > FPS_UPDATE_INTERVAL)
 	{
 		accum = 0.0f;
-		fps = static_cast<int>(1.0f / dt);
-		_set_window_caption(0, fps);
+		_set_window_caption(0, _fps);
 	}
 
 	start = std::chrono::steady_clock::now();
 
-	return dt;
+	return _dt;
 }
 
 HRESULT Core::QueryInterface(REFIID riid, void ** ppv)

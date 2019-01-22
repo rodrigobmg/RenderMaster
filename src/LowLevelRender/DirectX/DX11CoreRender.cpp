@@ -491,7 +491,6 @@ DXGI_FORMAT EngToDSVFormat(TEXTURE_FORMAT format)
 	{
 		case TEXTURE_FORMAT::D24S8: return DXGI_FORMAT_D24_UNORM_S8_UINT;
 	}
-
 	LOG_WARNING("dsv_format(): unknown format\n");
 	return DXGI_FORMAT_UNKNOWN;
 }
@@ -499,10 +498,6 @@ DXGI_FORMAT EngToDSVFormat(TEXTURE_FORMAT format)
 UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 {
 	UINT bindFlags_ = D3D11_BIND_SHADER_RESOURCE;
-
-	//if (isColorFormat(format))
-	//	bind_flags = D3D11_BIND_SHADER_RESOURCE;
-
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
 	{
 		if (isColorFormat(format))
