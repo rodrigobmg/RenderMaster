@@ -388,7 +388,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ICoreRenderTarget() = default;
-
 		virtual API SetColorTexture(uint slot, ITexture *tex) = 0;
 		virtual API SetDepthTexture(ITexture *tex) = 0;
 		virtual API UnbindColorTexture(uint slot) = 0;
@@ -399,7 +398,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ICoreMesh() = default;
-
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
@@ -408,8 +406,7 @@ namespace RENDER_MASTER
 	class ICoreShader
 	{
 	public:
-		virtual ~ICoreShader(){}
-		
+		virtual ~ICoreShader() = default;
 		virtual API SetFloatParameter(const char* name, float value) = 0;
 		virtual API SetVec4Parameter(const char* name, const vec4 *value) = 0;
 		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
@@ -420,7 +417,7 @@ namespace RENDER_MASTER
 	class ICoreStructuredBuffer
 	{
 	public:
-		virtual ~ICoreStructuredBuffer() {}
+		virtual ~ICoreStructuredBuffer() = default;
 		virtual API SetData(uint8 *data, size_t size) = 0;
 		virtual API GetSize(OUT uint *size) = 0;
 		virtual API GetElementSize(OUT uint *size) = 0;
@@ -507,7 +504,6 @@ namespace RENDER_MASTER
 		}
 	};
 
-
 	class IRender : public ISubSystem
 	{
 	public:
@@ -518,7 +514,6 @@ namespace RENDER_MASTER
 		virtual API ReleaseRenderTexture2D(ITexture *texIn) = 0;
 		virtual API ShadersReload() = 0;
 	};
-
 
 	// Axis aligned bound box
 	// All values specified in local game object coordinates
@@ -540,7 +535,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IGameObject() = default;
-
 		virtual API GetID(OUT uint *id) = 0;
 		virtual API SetID(uint *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
@@ -623,7 +617,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ITextFile() = default;
-
 		virtual API GetText(OUT const char **textOut) = 0;
 		virtual API SetText(const char *textIn) = 0;
 
@@ -634,7 +627,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IShader() = default;
-
 		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
 		virtual API GetVert(OUT const char **textOut) = 0;
 		virtual API GetGeom(OUT const char **textOut) = 0;
@@ -651,8 +643,7 @@ namespace RENDER_MASTER
 	class IStructuredBuffer : public IUnknown
 	{
 	public:
-		virtual ~IStructuredBuffer() {}
-
+		virtual ~IStructuredBuffer() = default;
 		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
 		virtual API SetData(uint8 *data, size_t size) = 0;
 		virtual API Reallocate(size_t newSize) = 0;
@@ -692,10 +683,10 @@ namespace RENDER_MASTER
 	class IResourceManager : public ISubSystem
 	{
 	public:
-		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
-		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
-		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API LoadTextFile(OUT ITextFile **pShader, const char *pShaderName) = 0;
+		virtual API LoadModel(OUT IModel **pModel, const char *path) = 0;
+		virtual API LoadMesh(OUT IMesh **pMesh, const char *path) = 0;
+		virtual API LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) = 0;
+		virtual API LoadTextFile(OUT ITextFile **pShader, const char *path) = 0;
 
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
@@ -726,7 +717,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IFile() = default;
-
 		virtual API Read(OUT uint8 *pMem, uint bytes) = 0;
 		virtual API ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
 		virtual API IsEndOfFile(OUT int *eof) = 0;
@@ -901,7 +891,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IConsoleCommand() = default;
-
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
 	};
