@@ -997,8 +997,7 @@ API DX11CoreRender::SetViewport(uint newWidth, uint newHeight)
 
 		destroyDefaultBuffers();
 		
-		if (FAILED(_swapChain->ResizeBuffers(1, newWidth, newHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
-			return E_ABORT;
+		ThrowIfFailed(_swapChain->ResizeBuffers(1, newWidth, newHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 		createDefaultBuffers(newWidth, newHeight);
 
