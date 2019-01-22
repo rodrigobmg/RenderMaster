@@ -374,6 +374,7 @@ float Core::_update_fps()
 	{
 		accum = 0.0f;
 		_set_window_caption(0, _fps);
+		_fpsLazy = _fps;
 	}
 
 	start = std::chrono::steady_clock::now();

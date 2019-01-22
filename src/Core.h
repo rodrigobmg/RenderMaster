@@ -38,6 +38,7 @@ class Core : public ICore
 	int64_t _frame = 0;
 	float _dt = 0.0f;
 	int _fps = 0;
+	int _fpsLazy = 0;
 
 	void _internal_update();
 	void _update();
@@ -70,6 +71,7 @@ public:
 
 	float deltaTime() const	{ return _dt; }
 	int FPS() const			{ return _fps; }
+	int FPSlazy() const		{ return _fpsLazy; }
 	int64_t frame() const	{ return _frame; }
 
 	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) override;

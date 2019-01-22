@@ -18,10 +18,11 @@ struct charr
 	uint32_t id;
 	float dummy[3];
 };
-constexpr char txt_c[] = "abcdefg 1234567890!";
+constexpr char txt_c[] = "FPS = 0000";
+constexpr size_t txt_buffer_size = sizeof(txt_c);
 string txt = txt_c;
 constexpr auto chars = sizeof(txt_c) - 1;
-constexpr uint ss = sizeof(charr);
+constexpr uint charr_bytes = sizeof(charr);
 size_t txt_hash;
 
 uint widths[256] = {
@@ -447,24 +448,24 @@ API Render::RenderPassGUI()
 
 	charr fontData[chars];
 
-	string fps = std::to_string(_pCore->FPS());
+	string fps = "FPS=" + std::to_string(_pCore->FPSlazy());
 
 	float offset = 0.0f;
-	for (size_t i = 0u; i < chars; i++)
+	for (size_t i = 0u; i < fps.size(); i++)
 	{
-		float w = static_cast<float>(widths[txt[i]]);
+		float w = static_cast<float>(widths[fps[i]]);
 		fontData[i].data[0] = w;
 		fontData[i].data[1] = offset;
-		fontData[i].id = static_cast<uint>(txt[i]);
+		fontData[i].id = static_cast<uint>(fps[i]);
 		offset += w;
 	}
 	
 	std::hash<string> hash_fn;
-	auto new_hash = hash_fn(txt);
+	auto new_hash = hash_fn(fps);
 	if (new_hash != txt_hash)
 	{
 		txt_hash = new_hash;
-		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), ss * chars);
+		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), charr_bytes * fps.size());
 	}
 
 	_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
@@ -473,7 +474,7 @@ API Render::RenderPassGUI()
 	_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 	_pCoreRender->SetDepthTest(0);
 
-	_pCoreRender->Draw(_postPlane.Get(), chars);
+	_pCoreRender->Draw(_postPlane.Get(), fps.size());
 
 	_pCoreRender->UnbindAllTextures();
 	_pCoreRender->SetStructuredBufer(0, nullptr);
@@ -786,9 +787,8 @@ void Render::Init()
 	_pResMan->LoadTextFile(&shader, "font.shader");
 	_fontShader =  WRL::ComPtr<ITextFile>(shader);
 
-
 	IStructuredBuffer *sb;
-	_pResMan->CreateStructuredBuffer(&sb, chars * ss, ss);
+	_pResMan->CreateStructuredBuffer(&sb, txt_buffer_size * charr_bytes, charr_bytes);
 	fontBuffer = StructuredBufferPtr(sb);
 
 	// Render Targets

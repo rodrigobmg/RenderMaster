@@ -31,24 +31,31 @@ STRUCT(Char)
 	vec4 data;
 	uint id;
 	vec3 dummy;
-END_STRUCT
+	END_STRUCT
 
 STRUCTURED_BUFFER_IN(0, buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
+	uint left_padding = 10;
+	uint top_padding = 32;
 	float ww = 32.0f;
 	float hh = 32.0f;
 	uint chars_in_row = 16u;
+	float tex_size = 512.0f;
 	
 	float widthPixels = buffer[INSTANCE].data.x;
 	float offsetPixels = buffer[INSTANCE].data.y;
 
 	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
 
-	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [0, 1] x [0, 1]
+	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
 
-	vec2 pos_ = vec2(-1, 0) + vec2(2 * invWidth * offsetPixels, 0.0f) + uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
+	vec2 pos_ = vec2(-1, 1) + 
+		vec2(2 * invWidth * left_padding, -2 * invHeight * top_padding) +
+		vec2(2 * invWidth * offsetPixels, 0.0f) + 
+		uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
+	
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 
 	uv.y = 1.0f - uv.y;
@@ -58,15 +65,14 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	float x = float(id % chars_in_row) * ww;
 	float y = float(id / chars_in_row) * hh;
 
-	x += uv.x * (widthPixels +0.5f ); // 0.5 need???
+	x += uv.x * (widthPixels + 0.5f); // 0.5f need???
 	y += uv.y * hh;
 
-	x = x / 512.0f;
-	y = y / 512.0f;
+	x = x / tex_size;
+	y = y / tex_size;
 
 	#ifdef ENG_INPUT_TEXCOORD
 		OUT_ATTRIBUTE(TexCoord) = vec2(x, y);
-		//OUT_ATTRIBUTE(TexCoord) = IN_ATTRIBUTE(TexCoordIn);
 	#endif
 
 MAIN_VERTEX_END
