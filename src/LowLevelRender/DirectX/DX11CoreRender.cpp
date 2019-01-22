@@ -989,6 +989,9 @@ API DX11CoreRender::SetViewport(uint newWidth, uint newHeight)
 {
 	if (_state.width != newWidth || _state.heigth != newHeight)
 	{
+		_state.width = newWidth;
+		_state.heigth = newHeight;
+
 		dxViewport.Height = (float)newHeight;
 		dxViewport.Width = (float)newWidth;
 
