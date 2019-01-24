@@ -94,7 +94,7 @@ MAIN_FRAG(VS_OUTPUT)
 
 	vec3 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).rgb;
 
-	OUT_COLOR = vec4(tex, luma(tex));
+	OUT_COLOR = vec4(vec3(1, 1, 1) * tex, luma(tex));
 	//OUT_COLOR = vec4(1,1,0,1);
 
 MAIN_FRAG_END
