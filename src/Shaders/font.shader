@@ -28,26 +28,24 @@ UNIFORM_BUFFER_END
 STRUCT(Char)
 	vec4 data;
 	uint id;
-	vec3 __dummy;
+	uint __align[3];
 	END_STRUCT
 
 STRUCTURED_BUFFER_IN(0, buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
-	uint left_padding = 10;
-	uint top_padding = 32;
-	float ww = 32.0f;
-	float hh = 32.0f;
-	uint chars_in_row = 16u;
-	float tex_size = 512.0f;
+	const uint left_padding = 10;
+	const uint top_padding = 32;
+	const float ww = 32.0f;
+	const float hh = 32.0f;
+	const uint chars_in_row = 16u;
+	const float tex_size = 512.0f;
 	
 	float w = buffer[INSTANCE].data.x;
 	float h = buffer[INSTANCE].data.y;
 
-	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
-
-	vec2 vtx = pos * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
+	vec2 vtx = IN_ATTRIBUTE(PositionIn).xy * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
 
 	vec2 ndc = 
 		vec2(-1, 1) +
@@ -75,11 +73,7 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
 MAIN_VERTEX_END
 
-#else // ENG_SHADER_PIXEL
-
-///////////////////////
-// PIXEL SHADER
-///////////////////////
+#else
 
 float luma(vec3 col)
 {
