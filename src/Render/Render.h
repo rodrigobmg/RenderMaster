@@ -70,7 +70,7 @@ class Render : public IRender
 	{
 		float data[4];
 		uint32_t id;
-		float dummy[3];
+		float __dummy[3];
 	};
 	string txt;
 	size_t txt_hash;

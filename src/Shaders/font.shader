@@ -28,7 +28,7 @@ UNIFORM_BUFFER_END
 STRUCT(Char)
 	vec4 data;
 	uint id;
-	vec3 dummy;
+	vec3 __dummy;
 	END_STRUCT
 
 STRUCTURED_BUFFER_IN(0, buffer, Char)
@@ -42,29 +42,29 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	uint chars_in_row = 16u;
 	float tex_size = 512.0f;
 	
-	float widthPixels = buffer[INSTANCE].data.x;
-	float offsetPixels = buffer[INSTANCE].data.y;
+	float w = buffer[INSTANCE].data.x;
+	float h = buffer[INSTANCE].data.y;
 
 	vec2 pos = IN_ATTRIBUTE(PositionIn).xy;
 
-	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
+	vec2 vtx = pos * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
 
-	vec2 pos_ = vec2(-1, 1) + 
+	vec2 ndc = 
+		vec2(-1, 1) +
 		vec2(invWidth2 * left_padding, -invHeight2 * top_padding) +
-		vec2(invWidth2 * offsetPixels, 0.0f) + 
-		uv * vec2(invWidth2 * (widthPixels + 0.0f), invHeight2 * hh);
+		vec2(invWidth2 * h, 0.0f) + 
+		vec2(invWidth2 * w, invHeight2 * hh) * vtx;
 	
-	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
+	OUT_POSITION = vec4(ndc, 0.0f, 1.0f);
 
-	uv.y = 1.0f - uv.y;
+	vtx.y = 1.0f - vtx.y;
 
-	uint id = buffer[INSTANCE].id;
-	id = id - 32;
+	uint id = buffer[INSTANCE].id - 32;
 	float uv_x = float(id % chars_in_row) * ww;
 	float uv_y = float(id / chars_in_row) * hh;
 
-	uv_x += uv.x * (widthPixels + 0.0); // 0.5f need???
-	uv_y += uv.y * hh;
+	uv_x += vtx.x * w;
+	uv_y += vtx.y * hh;
 
 	uv_x = uv_x / tex_size;
 	uv_y = uv_y / tex_size;
