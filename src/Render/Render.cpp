@@ -452,25 +452,25 @@ API Render::RenderPassGUI()
 		_pResMan->CreateStructuredBuffer(&sb, bufferCharacters * sizeof(charr), sizeof(charr));
 		fontBuffer = StructuredBufferPtr(sb);
 
-		fontData = unique_ptr<charr[]>(new charr[bufferCharacters]);
+		txtData = unique_ptr<charr[]>(new charr[bufferCharacters]);
 	}
 
 	float offset = 0.0f;
 	for (size_t i = 0u; i < fps.size(); i++)
 	{
 		float w = static_cast<float>(widths[fps[i]]);
-		fontData[i].data[0] = w;
-		fontData[i].data[1] = offset;
-		fontData[i].id = static_cast<uint>(fps[i]);
+		txtData[i].data[0] = w;
+		txtData[i].data[1] = offset;
+		txtData[i].id = static_cast<uint>(fps[i]);
 		offset += w;
 	}
 	
 	std::hash<string> hash_fn;
 	size_t new_hash = hash_fn(fps);
-	if (new_hash != txt_hash)
+	if (new_hash != txtHash)
 	{
-		txt_hash = new_hash;
-		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), fps.size() * sizeof(charr));
+		txtHash = new_hash;
+		fontBuffer->SetData(reinterpret_cast<uint8*>(&txtData[0].data[0]), fps.size() * sizeof(charr));
 	}
 
 	_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());

@@ -646,7 +646,6 @@ namespace RENDER_MASTER
 		virtual ~IStructuredBuffer() = default;
 		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
 		virtual API SetData(uint8 *data, size_t size) = 0;
-		virtual API Reallocate(size_t newSize) = 0;
 
 		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};

@@ -73,8 +73,8 @@ class Render : public IRender
 		uint32_t __align[3];
 	};
 	string txt;
-	size_t txt_hash;
-	unique_ptr<charr[]> fontData;
+	size_t txtHash;
+	unique_ptr<charr[]> txtData;
 	size_t bufferCharacters{};
 
 	API shaders_reload(const char **args, uint argsNumber);

@@ -11,7 +11,6 @@ public:
 
 	API GetCoreBuffer(ICoreStructuredBuffer **bufOut) override;
 	API SetData(uint8 *data, size_t size) override;
-	API Reallocate(size_t newSize) override;
 
 	RUNTIME_ONLY_RESOURCE_HEADER
 };
