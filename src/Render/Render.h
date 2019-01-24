@@ -65,6 +65,20 @@ class Render : public IRender
 	mat4 ViewMat;
 	mat4 ViewProjMat;
 
+	// font
+	struct charr
+	{
+		float data[4];
+		uint32_t id;
+		float dummy[3];
+	};
+	string txt;
+	size_t txt_hash;
+	unique_ptr<charr[]> fontData;
+	size_t bufferCharacters{};
+
+	API shaders_reload(const char **args, uint argsNumber);
+
 	void renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes);
 	void renderEnginePost(RenderBuffers& buffers);
 	void setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader);

@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "Render.h"
 #include "Core.h"
+#include "ConsoleWindow.h"
 #include "SceneManager.h"
 #include "simplecpp.h"
+#include <memory>
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -12,276 +14,269 @@ DEFINE_LOG_HELPERS(_pCore)
 // Render
 /////////////////////////
 
-struct charr
-{
-	float data[4];
-	uint32_t id;
-	float dummy[3];
-};
-constexpr char txt_c[] = "FPS = 0000";
-constexpr size_t txt_buffer_size = sizeof(txt_c);
-string txt = txt_c;
-constexpr auto chars = sizeof(txt_c) - 1;
-constexpr uint charr_bytes = sizeof(charr);
-size_t txt_hash;
-
 uint widths[256] = {
-0
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
+8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
 ,0
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,4
+,4
 ,5
+,8
 ,7
-,9
-,11
-,11
-,16
-,15
-,5
-,7
-,7
-,11
-,11
-,5
-,7
-,6
-,9
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,11
-,6
-,6
-,11
-,11
 ,11
 ,10
-,20
+,3
+,4
+,4
+,5
+,9
+,3
+,5
+,3
+,5
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,3
+,3
+,9
+,8
+,9
+,6
+,12
+,9
+,8
+,8
+,9
+,8
+,7
+,9
+,10
+,3
+,7
+,8
+,8
+,12
+,10
+,10
+,8
+,10
+,9
+,9
+,8
+,9
+,9
 ,13
-,12
-,12
-,14
-,11
-,10
-,14
-,14
-,6
-,7
-,11
-,9
-,19
-,14
-,15
-,11
-,15
-,12
-,10
-,11
-,14
-,12
-,20
-,11
-,11
-,10
-,7
-,9
-,7
-,11
-,11
-,6
-,11
-,12
-,9
-,12
-,11
-,7
-,10
-,12
-,5
-,5
-,10
-,5
-,18
-,12
-,12
-,12
-,12
 ,8
 ,9
 ,7
-,12
-,10
-,16
-,10
-,10
-,9
-,7
-,10
-,7
-,11
-,11
-,14
+,4
+,5
+,4
 ,9
 ,5
+,3
+,7
 ,8
-,9
-,15
-,11
-,11
-,11
-,23
-,19
+,6
+,8
 ,7
-,19
-,12
-,14
-,14
-,12
+,4
+,8
+,7
+,3
+,3
+,6
+,3
+,11
+,7
+,8
+,8
+,8
 ,5
+,6
+,4
+,7
+,6
+,9
+,6
+,6
+,6
+,4
+,3
+,4
+,9
+,8
+,7
+,8
+,3
+,7
 ,5
 ,9
-,9
-,11
-,11
-,20
-,11
+,5
+,5
+,5
 ,16
-,17
 ,7
-,17
+,4
+,12
+,8
+,7
+,8
+,8
+,3
+,3
+,5
+,5
+,5
+,7
+,13
+,4
 ,10
+,6
+,4
 ,12
-,12
+,8
+,6
+,7
+,4
+,4
+,7
+,7
+,7
+,7
+,3
+,6
 ,5
 ,12
-,10
+,5
 ,7
-,11
-,10
-,11
-,11
-,11
-,18
+,9
+,5
 ,12
+,5
+,5
+,9
+,5
+,5
+,4
+,8
+,6
+,3
+,3
+,5
+,6
+,7
+,12
+,12
+,12
+,6
+,8
+,8
+,8
+,8
+,8
+,8
 ,11
-,11
+,8
+,7
+,7
+,7
+,7
+,3
+,3
+,3
+,3
+,9
+,10
+,10
+,10
+,10
+,10
+,10
+,9
+,10
+,9
+,9
+,9
+,9
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
 ,7
 ,11
 ,6
 ,7
-,11
-,6
-,5
+,7
+,7
+,7
+,3
+,3
+,3
+,3
+,7
+,7
 ,8
-,12
-,13
-,6
-,11
-,23
-,10
-,11
-,5
-,10
-,9
-,5
-,13
-,12
-,12
-,9
-,14
-,11
-,18
-,10
-,14
-,14
-,12
-,13
-,19
-,14
-,15
-,14
-,11
-,12
-,11
-,12
-,15
-,11
-,14
-,12
-,19
-,20
-,14
-,17
-,12
-,12
-,19
-,12
-,11
-,12
-,11
 ,8
-,12
-,11
-,15
+,8
+,8
+,8
 ,9
-,12
-,12
-,10
-,11
-,15
-,12
-,12
-,11
-,12
-,9
-,9
-,10
-,14
-,10
-,12
-,10
-,16
-,16
-,12
-,15
-,10
-,10
-,16
-,10 };
+,8
+,7
+,7
+,7
+,7
+,6
+,8
+,6
+};
+
+API Render::shaders_reload(const char ** args, uint argsNumber)
+{
+	return ShadersReload();
+}
 
 void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 {
@@ -435,6 +430,9 @@ API Render::RenderPassGUI()
 	_postPlane->GetAttributes(&attribs);
 
 	IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
+	if (!shader)
+		return S_OK;
+
 	_pCoreRender->SetShader(shader);
 
 	uint w, h;
@@ -446,9 +444,19 @@ API Render::RenderPassGUI()
 	shader->SetFloatParameter("invWidth", 1.0f / w);
 	shader->FlushParameters();
 
-	charr fontData[chars];
+	string fps = "qwertyuiopasdfgjklzxcvbnm QWERTYUIOPASDFGHJKLZXCVBNM 12345678 FPS=" + std::to_string(_pCore->FPSlazy());
 
-	string fps = "FPS=" + std::to_string(_pCore->FPSlazy());
+	if (!fontBuffer || bufferCharacters < fps.size())
+	{
+		bufferCharacters = fps.size();
+
+		IStructuredBuffer *sb;
+		_pResMan->CreateStructuredBuffer(&sb, bufferCharacters * sizeof(charr), sizeof(charr));
+		fontBuffer = StructuredBufferPtr(sb);
+
+		fontData = unique_ptr<charr[]>(new charr[bufferCharacters]);
+	}
+
 
 	float offset = 0.0f;
 	for (size_t i = 0u; i < fps.size(); i++)
@@ -457,7 +465,7 @@ API Render::RenderPassGUI()
 		fontData[i].data[0] = w;
 		fontData[i].data[1] = offset;
 		fontData[i].id = static_cast<uint>(fps[i]);
-		offset += w;
+		offset += w + 0;
 	}
 	
 	std::hash<string> hash_fn;
@@ -465,7 +473,7 @@ API Render::RenderPassGUI()
 	if (new_hash != txt_hash)
 	{
 		txt_hash = new_hash;
-		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), charr_bytes * fps.size());
+		fontBuffer->SetData(reinterpret_cast<uint8*>(&fontData[0].data[0]), fps.size() * sizeof(charr));
 	}
 
 	_pCoreRender->SetStructuredBufer(0, fontBuffer.Get());
@@ -474,7 +482,7 @@ API Render::RenderPassGUI()
 	_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 	_pCoreRender->SetDepthTest(0);
 
-	_pCoreRender->Draw(_postPlane.Get(), fps.size());
+	_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
 
 	_pCoreRender->UnbindAllTextures();
 	_pCoreRender->SetStructuredBufer(0, nullptr);
@@ -760,6 +768,8 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 	_pCore->GetSubSystem((ISubSystem**)&_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
+
+	_pCore->consoleWindow()->addCommand("shaders_reload", std::bind(&Render::shaders_reload, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 Render::~Render()
@@ -786,10 +796,6 @@ void Render::Init()
 
 	_pResMan->LoadTextFile(&shader, "font.shader");
 	_fontShader =  WRL::ComPtr<ITextFile>(shader);
-
-	IStructuredBuffer *sb;
-	_pResMan->CreateStructuredBuffer(&sb, txt_buffer_size * charr_bytes, charr_bytes);
-	fontBuffer = StructuredBufferPtr(sb);
 
 	// Render Targets
 	IRenderTarget *RT;

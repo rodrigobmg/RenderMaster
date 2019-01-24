@@ -635,7 +635,7 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	return S_OK;
 }
 
-API GLCoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize)
+API GLCoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize)
 {
 	*pStructuredBuffer = nullptr;
 	return S_OK;

@@ -94,7 +94,7 @@ public:
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
 	API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
-	API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, size_t size, size_t elementSize) override;
+	API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;
 	API CreateCamera(OUT ICamera **pCamera) override;

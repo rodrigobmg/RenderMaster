@@ -452,7 +452,7 @@ namespace RENDER_MASTER
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
-		virtual API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize) = 0;
+		virtual API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize) = 0;
 
 		virtual API PushStates() = 0;
 		virtual API PopStates() = 0;
@@ -691,7 +691,7 @@ namespace RENDER_MASTER
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
 		virtual API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
-		virtual API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, size_t size, size_t elementSize) = 0;
+		virtual API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;

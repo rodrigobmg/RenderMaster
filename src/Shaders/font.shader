@@ -54,7 +54,7 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	vec2 pos_ = vec2(-1, 1) + 
 		vec2(2 * invWidth * left_padding, -2 * invHeight * top_padding) +
 		vec2(2 * invWidth * offsetPixels, 0.0f) + 
-		uv * vec2(2 * invWidth * widthPixels, 2 * invHeight * hh);
+		uv * vec2(2 * invWidth * (widthPixels + 0.0f), 2 * invHeight * hh);
 	
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 
@@ -62,17 +62,17 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
 	uint id = buffer[INSTANCE].id;
 	id = id - 32;
-	float x = float(id % chars_in_row) * ww;
-	float y = float(id / chars_in_row) * hh;
+	float uv_x = float(id % chars_in_row) * ww;
+	float uv_y = float(id / chars_in_row) * hh;
 
-	x += uv.x * (widthPixels + 0.5f); // 0.5f need???
-	y += uv.y * hh;
+	uv_x += uv.x * (widthPixels + 0.0); // 0.5f need???
+	uv_y += uv.y * hh;
 
-	x = x / tex_size;
-	y = y / tex_size;
+	uv_x = uv_x / tex_size;
+	uv_y = uv_y / tex_size;
 
 	#ifdef ENG_INPUT_TEXCOORD
-		OUT_ATTRIBUTE(TexCoord) = vec2(x, y);
+		OUT_ATTRIBUTE(TexCoord) = vec2(uv_x, uv_y);
 	#endif
 
 MAIN_VERTEX_END
@@ -97,7 +97,7 @@ MAIN_FRAG(VS_OUTPUT)
 	vec3 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).rgb;
 
 	OUT_COLOR = vec4(tex, luma(tex));
-	//OUT_COLOR = vec4(1,0,0,1);
+	//OUT_COLOR = vec4(1,1,0,1);
 
 MAIN_FRAG_END
 

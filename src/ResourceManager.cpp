@@ -1558,7 +1558,7 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 	return S_OK;
 }
 
-API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, size_t bytes, size_t elementSize)
+API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint bytes, uint elementSize)
 {
 	ICoreStructuredBuffer *coreStructuredBuffer = nullptr;
 

@@ -643,7 +643,7 @@ API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	return S_OK;
 }
 
-API DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, size_t size, size_t elementSize)
+API DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize)
 {
 	assert(size % 16 == 0);
 
