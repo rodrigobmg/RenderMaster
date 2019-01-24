@@ -1241,15 +1241,6 @@ TEXTURE_FORMAT DDSToEngFormat(const DDS_PIXELFORMAT& ddpf)
 	return TEXTURE_FORMAT::UNKNOWN;
 }
 
-ICoreTexture* ResourceManager::loadWhiteTexture()
-{
-	uint8 data[4] = { 255u, 255u, 255u, 255u };
-	TEXTURE_CREATE_FLAGS flags{};
-	ICoreTexture *tex;
-	assert(_pCoreRender->CreateTexture(&tex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, flags, false) == S_OK);
-	return tex;
-}
-
 ICoreTexture* ResourceManager::loadDDS(const char *path, TEXTURE_CREATE_FLAGS flags)
 {
 	IFile *pFile = nullptr;
@@ -1365,38 +1356,34 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 
 	if (!strcmp(path, "std#white_texture"))
 	{
-		coreTex = loadWhiteTexture();
+		uint8 data[4] = { 255u, 255u, 255u, 255u };
+		TEXTURE_CREATE_FLAGS flags{};
+		ICoreTexture *tex;
+
+		assert(_pCoreRender->CreateTexture(&coreTex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, flags, false) == S_OK);
 	}
 	else
 	{
-		if (path == NULL || strlen(path) == 0)
+		if (path == NULL || strlen(path) == 0 || !errorIfPathNotExist(path))
 		{
-			*pTexture = getRender()->WhiteTexture();
-			return E_INVALIDARG;
-		}
-
-		if (!errorIfPathNotExist(path))
-		{
-			*pTexture = getRender()->WhiteTexture();
+			*pTexture = nullptr;
 			return E_INVALIDARG;
 		}
 
 		const string file_ext = fileExtension(path);
 
-		if (file_ext == "dds")
-		{
-			coreTex = loadDDS(path, flags);
-			if (!coreTex)
-			{
-				LOG_WARNING("ResourceManager::LoadTexture(): some error occured");
-				*pTexture = getRender()->WhiteTexture();
-				return E_INVALIDARG;
-			}
-		}
-		else
+		if (file_ext != "dds")
 		{
 			LOG_WARNING_FORMATTED("Extension %s is not supported", file_ext.c_str());
-			*pTexture = getRender()->WhiteTexture();
+			*pTexture = nullptr;
+			return E_INVALIDARG;
+		}
+
+		coreTex = loadDDS(path, flags);
+		if (!coreTex)
+		{
+			LOG_FATAL("ResourceManager::LoadTexture(): some error occured");
+			*pTexture = nullptr;
 			return E_INVALIDARG;
 		}
 	}

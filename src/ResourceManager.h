@@ -65,8 +65,6 @@ class ResourceManager final : public IResourceManager
 	const char *loadTextFile(const char *fileName);
 	ICoreTexture *loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags);
 
-	ICoreTexture *loadWhiteTexture();
-
 public:
 
 	ResourceManager();
