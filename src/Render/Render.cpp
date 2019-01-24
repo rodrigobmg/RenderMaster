@@ -462,11 +462,11 @@ API Render::RenderPassGUI()
 		fontData[i].data[0] = w;
 		fontData[i].data[1] = offset;
 		fontData[i].id = static_cast<uint>(fps[i]);
-		offset += w + 0;
+		offset += w;
 	}
 	
 	std::hash<string> hash_fn;
-	auto new_hash = hash_fn(fps);
+	size_t new_hash = hash_fn(fps);
 	if (new_hash != txt_hash)
 	{
 		txt_hash = new_hash;
@@ -486,7 +486,6 @@ API Render::RenderPassGUI()
 
 	_pCoreRender->SetDepthTest(1);
 	_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-
 
 	return S_OK;
 }
