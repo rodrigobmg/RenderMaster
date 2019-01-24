@@ -822,13 +822,11 @@ void Render::Init()
 	_pResMan->CreateTexture(&tex, 300, 300, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::R32UI, TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT);
 	tex->AddRef();
 	tex->Release();
-
-	TEXTURE_CREATE_FLAGS flags = {};
-
-	_pResMan->LoadTexture(&tex, "std#white_texture", flags);
+	
+	_pResMan->LoadTexture(&tex, "std#white_texture", TEXTURE_CREATE_FLAGS());
 	whiteTexture = TexturePtr(tex);
 
-	_pResMan->LoadTexture(&tex, "ExportedFont.dds", flags);
+	_pResMan->LoadTexture(&tex, "ExportedFont.dds", TEXTURE_CREATE_FLAGS());
 	fontTexture = TexturePtr(tex);
 
 	LOG("Render initialized");

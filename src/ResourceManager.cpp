@@ -541,11 +541,14 @@ API ResourceManager::GetName(OUT const char **pName)
 
 API ResourceManager::Free()
 {
-	assert(_sharedMeshes.size() == 0 && "ResourceManager::Free: _sharedMeshes.size() != 0. You should release all meshes before free resource manager");
-	assert(_runtimeMeshes.size() == 0 && "ResourceManager::Free: _runtimeMeshes.size() != 0. You should release all meshes before free resource manager");
-	assert(_sharedTextures.size() == 0 && "ResourceManager::Free: _sharedTextures.size() != 0. You should release all textures before free resource manager");
-	assert(_runtimeTextures.size() == 0 && "ResourceManager::Free: _runtimeTextures.size() != 0. You should release all textures before free resource manager");
-	assert(_runtimeGameobjects.size() == 0 && "ResourceManager::Free: _runtimeGameobjects.size() != 0. You should release all gameobjects before free resource manager");
+	whiteTetxure->Release();
+	whiteTetxure = nullptr;
+
+	assert(_sharedMeshes.size() == 0 &&			"ResourceManager::Free: _sharedMeshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_runtimeMeshes.size() == 0 &&		"ResourceManager::Free: _runtimeMeshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_sharedTextures.size() == 0 &&		"ResourceManager::Free: _sharedTextures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtimeTextures.size() == 0 &&		"ResourceManager::Free: _runtimeTextures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtimeGameobjects.size() == 0 &&	"ResourceManager::Free: _runtimeGameobjects.size() != 0. You should release all gameobjects before free resource manager");
 
 	return S_OK;
 }
@@ -696,9 +699,6 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		return S_OK;
 	}
 
-	// check if standard mesh
-	// then create new one
-
 	ICoreMesh *stdCoreMesh = nullptr;
 
 	if (!strcmp(path, "std#plane"))
@@ -730,8 +730,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		indexDesc.number = 6;
 		indexDesc.format = MESH_INDEX_FORMAT::INT16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES));
 
 	} else if (!strcmp(path, "std#axes"))
 	{
@@ -744,8 +743,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		descAxes.numberOfVertex = 2;
 		descAxes.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES));
 
 	} else if (!strcmp(path, "std#axes_arrows"))
 	{
@@ -791,8 +789,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		descArrows.numberOfVertex = numberOfVeretex;
 		descArrows.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES));
 
 	} else if (!strcmp(path, "std#grid"))
 	{
@@ -816,9 +813,9 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		descGrid.numberOfVertex = 4 * linesNumber;
 		descGrid.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-			return E_ABORT;
-	}else if (!strcmp(path, "std#quad_lines"))
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES));
+	}
+	else if (!strcmp(path, "std#quad_lines"))
 	{
 		vec4 vertex[8];
 		vertex[0] = vec4(0.0f, 0.0f, 0.0f, 1.0f); vertex[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -833,8 +830,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		descGrid.numberOfVertex = 8;
 		descGrid.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES));
 	}
 
 	if (stdCoreMesh)
@@ -1335,12 +1331,10 @@ ICoreTexture* ResourceManager::loadDDS(const char *path, TEXTURE_CREATE_FLAGS fl
 		return nullptr;
 	}
 
-
 	const TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
-
 	bool mipmapsPresented = header->mipMapCount > 1;
-
 	ICoreTexture *tex = nullptr;
+
 	if (FAILED(_pCoreRender->CreateTexture(&tex, imageData, header->width, header->height, type, format, flags, mipmapsPresented)))
 	{
 		LOG_WARNING("ResourceManager::loadDDS(): failed to create texture");
@@ -1356,11 +1350,25 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 
 	if (!strcmp(path, "std#white_texture"))
 	{
-		uint8 data[4] = { 255u, 255u, 255u, 255u };
-		TEXTURE_CREATE_FLAGS flags{};
-		ICoreTexture *tex;
+		if (!whiteTetxure)
+		{
+			uint8 data[4] = { 255u, 255u, 255u, 255u };
+			ThrowIfFailed(_pCoreRender->CreateTexture(&coreTex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS(), false));
 
-		assert(_pCoreRender->CreateTexture(&coreTex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, flags, false) == S_OK);
+			ITexture *tex = new Texture(coreTex, path);
+
+			#ifdef PROFILE_RESOURCES
+				DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
+			#endif
+
+			_sharedTextures.emplace(path, tex);
+
+			*pTexture = tex;
+			whiteTetxure = tex;
+			whiteTetxure->AddRef();
+
+			return S_OK;
+		}
 	}
 	else
 	{
@@ -1380,6 +1388,7 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 		}
 
 		coreTex = loadDDS(path, flags);
+
 		if (!coreTex)
 		{
 			LOG_FATAL("ResourceManager::LoadTexture(): some error occured");

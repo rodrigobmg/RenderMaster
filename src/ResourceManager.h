@@ -43,6 +43,8 @@ class ResourceManager final : public IResourceManager
 
 	CRITICAL_SECTION _cs{};
 
+	ITexture *whiteTetxure = nullptr;
+
 	#ifdef USE_FBX
 	const int fbxDebug = 1;
 
