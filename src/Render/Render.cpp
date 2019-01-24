@@ -465,11 +465,11 @@ API Render::RenderPassGUI()
 		offset += w;
 	}
 	
-	std::hash<string> hash_fn;
-	size_t new_hash = hash_fn(fps);
-	if (new_hash != txtHash)
+	std::hash<string> hashFn;
+	size_t newHash = hashFn(fps);
+	if (newHash != txtHash)
 	{
-		txtHash = new_hash;
+		txtHash = newHash;
 		fontBuffer->SetData(reinterpret_cast<uint8*>(&txtData[0].data[0]), fps.size() * sizeof(charr));
 	}
 

@@ -65,7 +65,7 @@ class Render : public IRender
 	mat4 ViewMat;
 	mat4 ViewProjMat;
 
-	// font
+	// Font
 	struct charr
 	{
 		float data[4];
