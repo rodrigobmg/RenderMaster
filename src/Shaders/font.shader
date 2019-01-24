@@ -21,8 +21,8 @@ STRUCT(VS_INPUT)
 END_STRUCT
 
 UNIFORM_BUFFER_BEGIN(viewport_parameters)
-	UNIFORM(float, invWidth)
-	UNIFORM(float, invHeight)
+	UNIFORM(float, invWidth2)
+	UNIFORM(float, invHeight2)
 UNIFORM_BUFFER_END
 
 STRUCT(Char)
@@ -50,9 +50,9 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	vec2 uv = pos * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
 
 	vec2 pos_ = vec2(-1, 1) + 
-		vec2(2 * invWidth * left_padding, -2 * invHeight * top_padding) +
-		vec2(2 * invWidth * offsetPixels, 0.0f) + 
-		uv * vec2(2 * invWidth * (widthPixels + 0.0f), 2 * invHeight * hh);
+		vec2(invWidth2 * left_padding, -invHeight2 * top_padding) +
+		vec2(invWidth2 * offsetPixels, 0.0f) + 
+		uv * vec2(invWidth2 * (widthPixels + 0.0f), invHeight2 * hh);
 	
 	OUT_POSITION = vec4(pos_, 0.0f, 1.0f);
 

@@ -438,8 +438,8 @@ API Render::RenderPassGUI()
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
 
-	shader->SetFloatParameter("invHeight", 1.0f / h);
-	shader->SetFloatParameter("invWidth", 1.0f / w);
+	shader->SetFloatParameter("invHeight2", 2.0f / h);
+	shader->SetFloatParameter("invWidth2", 2.0f / w);
 	shader->FlushParameters();
 
 	string fps = "FPS=" + std::to_string(_pCore->FPSlazy());
