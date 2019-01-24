@@ -861,8 +861,8 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 		//	return E_FAIL;
 		//}
 
-		//const string file_ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
-		//if (file_ext == "fbx")
+		//const string ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
+		//if (ext == "fbx")
 		//{
 		//	loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), relativeModelPath.c_str());
 
@@ -889,7 +889,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 
 	#endif
 		//{
-		//	LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", file_ext.c_str());
+		//	LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", ext.c_str());
 		//	return E_FAIL;
 		//}
 
@@ -1370,11 +1370,11 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 			return E_INVALIDARG;
 		}
 
-		const string file_ext = fileExtension(path);
+		const string ext = fileExtension(path);
 
-		if (file_ext != "dds")
+		if (ext != "dds")
 		{
-			LOG_WARNING_FORMATTED("Extension %s is not supported", file_ext.c_str());
+			LOG_WARNING_FORMATTED("Extension %s is not supported", ext.c_str());
 			*pTexture = nullptr;
 			return E_INVALIDARG;
 		}
