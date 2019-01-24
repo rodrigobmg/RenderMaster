@@ -21,8 +21,6 @@ STRUCT(VS_INPUT)
 END_STRUCT
 
 UNIFORM_BUFFER_BEGIN(viewport_parameters)
-	UNIFORM(uint, width)
-	UNIFORM(uint, height)
 	UNIFORM(float, invWidth)
 	UNIFORM(float, invHeight)
 UNIFORM_BUFFER_END

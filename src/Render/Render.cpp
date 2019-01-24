@@ -438,13 +438,11 @@ API Render::RenderPassGUI()
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
 
-	shader->SetUintParameter("height", h);
-	shader->SetUintParameter("width", w);
 	shader->SetFloatParameter("invHeight", 1.0f / h);
 	shader->SetFloatParameter("invWidth", 1.0f / w);
 	shader->FlushParameters();
 
-	string fps = "qwertyuiopasdfgjklzxcvbnm QWERTYUIOPASDFGHJKLZXCVBNM 12345678 FPS=" + std::to_string(_pCore->FPSlazy());
+	string fps = "FPS=" + std::to_string(_pCore->FPSlazy());
 
 	if (!fontBuffer || bufferCharacters < fps.size())
 	{
@@ -456,7 +454,6 @@ API Render::RenderPassGUI()
 
 		fontData = unique_ptr<charr[]>(new charr[bufferCharacters]);
 	}
-
 
 	float offset = 0.0f;
 	for (size_t i = 0u; i < fps.size(); i++)
