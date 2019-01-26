@@ -295,7 +295,7 @@ API Render::shaders_reload(const char ** args, uint argsNumber)
 
 uint Render::getNumLines()
 {
-	return 4;
+	return 5;
 }
 
 string Render::getString(uint i)
@@ -306,6 +306,7 @@ string Render::getString(uint i)
 		case 1: return "FPS=" + std::to_string(_pCore->FPSlazy());
 		case 2: return "Runtime Shaders=" + std::to_string(_shaders_pool.size());
 		case 3: return "Texture=" + std::to_string(_texture_pool.size());
+		case 4: return "";
 	}
 	assert(false);
 	return "";
@@ -492,39 +493,42 @@ API Render::RenderPassGUI()
 
 		string fps = _pCore->GetProfilerRecord(i);
 
-		if (!r.fontBuffer || r.bufferCharacters < fps.size())
+		if (fps.size() > 0)
 		{
-			r.bufferCharacters = fps.size();
+			if (!r.fontBuffer || r.bufferCharacters < fps.size())
+			{
+				r.bufferCharacters = fps.size();
 
-			IStructuredBuffer *sb;
-			_pResMan->CreateStructuredBuffer(&sb, r.bufferCharacters * sizeof(charr), sizeof(charr));
-			r.fontBuffer = StructuredBufferPtr(sb);
+				IStructuredBuffer *sb;
+				_pResMan->CreateStructuredBuffer(&sb, r.bufferCharacters * sizeof(charr), sizeof(charr));
+				r.fontBuffer = StructuredBufferPtr(sb);
 
-			r.txtData = unique_ptr<charr[]>(new charr[r.bufferCharacters]);
+				r.txtData = unique_ptr<charr[]>(new charr[r.bufferCharacters]);
+			}
+
+			float offset = 0.0f;
+			for (size_t i = 0u; i < fps.size(); i++)
+			{
+				float w = static_cast<float>(widths[fps[i]]);
+				r.txtData[i].data[0] = w;
+				r.txtData[i].data[1] = offset;
+				r.txtData[i].data[2] = offsetVert;
+				r.txtData[i].id = static_cast<uint>(fps[i]);
+				offset += w;
+			}
+
+			std::hash<string> hashFn;
+			size_t newHash = hashFn(fps);
+			if (newHash != r.txtHash)
+			{
+				r.txtHash = newHash;
+				r.fontBuffer->SetData(reinterpret_cast<uint8*>(&r.txtData[0].data[0]), fps.size() * sizeof(charr));
+			}
+
+			_pCoreRender->SetStructuredBufer(1, r.fontBuffer.Get());
+
+			_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
 		}
-
-		float offset = 0.0f;
-		for (size_t i = 0u; i < fps.size(); i++)
-		{
-			float w = static_cast<float>(widths[fps[i]]);
-			r.txtData[i].data[0] = w;
-			r.txtData[i].data[1] = offset;
-			r.txtData[i].data[2] = offsetVert;
-			r.txtData[i].id = static_cast<uint>(fps[i]);
-			offset += w;
-		}
-	
-		std::hash<string> hashFn;
-		size_t newHash = hashFn(fps);
-		if (newHash != r.txtHash)
-		{
-			r.txtHash = newHash;
-			r.fontBuffer->SetData(reinterpret_cast<uint8*>(&r.txtData[0].data[0]), fps.size() * sizeof(charr));
-		}
-
-		_pCoreRender->SetStructuredBufer(1, r.fontBuffer.Get());
-
-		_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
 
 		offsetVert -= 17.0f;
 	}

@@ -528,7 +528,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 
 uint ResourceManager::getNumLines()
 {
-	return 3;
+	return 4;
 }
 
 string ResourceManager::getString(uint i)
@@ -538,6 +538,7 @@ string ResourceManager::getString(uint i)
 		case 0: return "===== Resource Manager =====";
 		case 1: return "Shared resources: " + std::to_string(sharedResources());
 		case 2: return "Runtime resources: " + std::to_string(runtimeResources());
+		case 3: return "";
 	};
 	assert(0);
 	return "";
