@@ -21,7 +21,7 @@ public:
 	SHARED_ONLY_RESOURCE_HEADER
 };
 
-class ResourceManager final : public IResourceManager
+class ResourceManager final : public IResourceManager, IProfilerCallback
 {
 	// Rintime resources
 	// No files associated with these resources
@@ -61,11 +61,16 @@ class ResourceManager final : public IResourceManager
 
 	API resources_list(const char **args, uint argsNumber);
 
+	uint getNumLines() override;
+	string getString(uint i) override;
+
 	string constructFullPath(const string& file);
 	bool errorIfPathNotExist(const string& fullPath);
 	vector<IMesh*> findLoadedMeshes(const char* pRelativeModelPath, const char *pMeshID);
 	const char *loadTextFile(const char *fileName);
 	ICoreTexture *loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags);
+	size_t sharedResources();
+	size_t runtimeResources();
 
 public:
 

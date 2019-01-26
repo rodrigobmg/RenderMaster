@@ -567,13 +567,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	if(FAILED(_device->CreateSamplerState(&sampDesc, &sampler)))
-	{
-		tex->Release();
-		LOG_FATAL("DX11CoreRender::CreateTexture(): can't create sampler\n");
-		*pTexture = nullptr;
-		return E_FAIL;
-	}
+	ThrowIfFailed(_device->CreateSamplerState(&sampDesc, &sampler));
 
 	// Shader Resource View
 	ID3D11ShaderResourceView *srv = nullptr;

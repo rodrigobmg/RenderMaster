@@ -129,7 +129,7 @@ uint widths[256] = {
 ,8
 ,8
 ,8
-,5
+,4
 ,6
 ,4
 ,7
@@ -302,7 +302,7 @@ string Render::getString(uint i)
 {
 	switch (i)
 	{
-		case 0: return "Render:";
+		case 0: return "==== Render ====";
 		case 1: return "FPS=" + std::to_string(_pCore->FPSlazy());
 		case 2: return "Runtime Shaders=" + std::to_string(_shaders_pool.size());
 		case 3: return "Texture=" + std::to_string(_texture_pool.size());
@@ -475,7 +475,7 @@ API Render::RenderPassGUI()
 	shader->SetFloatParameter("invWidth2", 2.0f / w);
 	shader->FlushParameters();
 
-	_pCoreRender->BindTexture(1, fontTexture.Get());
+	_pCoreRender->BindTexture(0, fontTexture.Get());
 
 	_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 	_pCoreRender->SetDepthTest(0);
@@ -513,7 +513,7 @@ API Render::RenderPassGUI()
 			r.txtData[i].id = static_cast<uint>(fps[i]);
 			offset += w;
 		}
-
+	
 		std::hash<string> hashFn;
 		size_t newHash = hashFn(fps);
 		if (newHash != r.txtHash)
@@ -522,7 +522,7 @@ API Render::RenderPassGUI()
 			r.fontBuffer->SetData(reinterpret_cast<uint8*>(&r.txtData[0].data[0]), fps.size() * sizeof(charr));
 		}
 
-		_pCoreRender->SetStructuredBufer(0, r.fontBuffer.Get());
+		_pCoreRender->SetStructuredBufer(1, r.fontBuffer.Get());
 
 		_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
 
@@ -531,7 +531,7 @@ API Render::RenderPassGUI()
 
 
 	_pCoreRender->UnbindAllTextures();
-	_pCoreRender->SetStructuredBufer(0, nullptr);
+	_pCoreRender->SetStructuredBufer(1, nullptr);
 
 	_pCoreRender->SetDepthTest(1);
 	_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);

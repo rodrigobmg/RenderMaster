@@ -441,6 +441,8 @@ ResourceManager::ResourceManager()
 	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
 	_pCore->consoleWindow()->addCommand("resources_list", std::bind(&ResourceManager::resources_list, this, std::placeholders::_1, std::placeholders::_2));
+
+	_pCore->AddProfilerCallback(this);
 }
 
 ResourceManager::~ResourceManager()
@@ -467,9 +469,19 @@ void ResourceManager::Init()
 	LOG("Resource Manager initalized");
 }
 
+size_t ResourceManager::sharedResources()
+{
+	return _sharedMeshes.size() + _sharedTextures.size() + _sharedTextFiles.size();
+}
+
+size_t ResourceManager::runtimeResources()
+{
+	return _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size() + _runtimeRenderTargets.size() + _runtimeStructuredBuffers.size();
+}
+
 API ResourceManager::resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("========= Runtime resources: %i =============", _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size());
+	LOG_FORMATTED("========= Runtime resources: %i =============", runtimeResources());
 
 	LOG_FORMATTED("Runtime Meshes: %i", _runtimeMeshes.size());
 	LOG_FORMATTED("Runtime Textures: %i", _runtimeTextures.size());
@@ -490,7 +502,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtimeGameobjects);
 	PRINT_RUNTIME_RESOURCES("Shaders:", _runtimeShaders);
 
-	LOG_FORMATTED("========= Shared resources: %i =============", _sharedMeshes.size() + _sharedTextures.size() + _sharedTextFiles.size());
+	LOG_FORMATTED("========= Shared resources: %i =============", sharedResources());
 	LOG_FORMATTED("Shared Meshes: %i", _sharedMeshes.size());
 	LOG_FORMATTED("Shared Textures: %i", _sharedTextures.size());
 	LOG_FORMATTED("Shared Shader Texts: %i", _sharedTextFiles.size());
@@ -512,6 +524,23 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	PRINT_SHARED_RESOURCES("Shared TextFiles:", _sharedTextFiles, ITextFile);
 
 	return S_OK;
+}
+
+uint ResourceManager::getNumLines()
+{
+	return 3;
+}
+
+string ResourceManager::getString(uint i)
+{
+	switch (i)
+	{
+		case 0: return "===== Resource Manager =====";
+		case 1: return "Shared resources: " + std::to_string(sharedResources());
+		case 2: return "Runtime resources: " + std::to_string(runtimeResources());
+	};
+	assert(0);
+	return "";
 }
 
 string ResourceManager::constructFullPath(const string& file)

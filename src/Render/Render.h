@@ -22,7 +22,7 @@ struct RenderBuffers
 // Hight-lever render
 // Based on CoreRender (GLCoreRender or DX11CoreRender)
 //
-class Render : public IRender, public IProfilerCallback
+class Render : public IRender, IProfilerCallback
 {
 	ICoreRender *_pCoreRender{ nullptr };
 	IResourceManager *_pResMan{ nullptr };

@@ -31,7 +31,7 @@ STRUCT(Char)
 	uint __align[3];
 	END_STRUCT
 
-STRUCTURED_BUFFER_IN(0, buffer, Char)
+STRUCTURED_BUFFER_IN(1, buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
@@ -82,12 +82,12 @@ float luma(vec3 col)
 }
 
 #ifdef ENG_INPUT_TEXCOORD
-	TEXTURE2D_IN(1, TEX_ALBEDO)
+	TEXTURE2D_IN(0, TEX_ALBEDO)
 #endif
 
 MAIN_FRAG(VS_OUTPUT)
 
-	vec3 tex = TEXTURE(1, GET_ATRRIBUTE(TexCoord)).rgb;
+	vec3 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).rgb;
 
 	OUT_COLOR = vec4(vec3(1, 1, 1) * tex, luma(tex));
 	//OUT_COLOR = vec4(1,1,0,1);
