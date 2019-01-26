@@ -303,9 +303,9 @@ string Render::getString(uint i)
 	switch (i)
 	{
 		case 0: return "==== Render ====";
-		case 1: return "FPS=" + std::to_string(_pCore->FPSlazy());
-		case 2: return "Runtime Shaders=" + std::to_string(_shaders_pool.size());
-		case 3: return "Texture=" + std::to_string(_texture_pool.size());
+		case 1: return "FPS: " + std::to_string(_pCore->FPSlazy());
+		case 2: return "Runtime Shaders: " + std::to_string(_shaders_pool.size());
+		case 3: return "Texture pool:" + std::to_string(_texture_pool.size());
 		case 4: return "";
 	}
 	assert(false);

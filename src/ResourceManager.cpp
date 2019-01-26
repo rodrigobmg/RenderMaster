@@ -614,7 +614,7 @@ vector<IMesh*> ResourceManager::findLoadedMeshes(const char* pRelativeModelPath,
 		{
 			if (relativeModelPath == pRelativeModelPath && meshID == pMeshID)
 				out.push_back(it->second);
-		}			
+		}
 	}
 
 	return std::move(out);
