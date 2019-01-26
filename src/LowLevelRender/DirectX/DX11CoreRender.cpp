@@ -1231,7 +1231,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 	}
 }
 
-void DX11RenderTarget::_get_colors(ID3D11RenderTargetView **arrayOut, uint &targetsNum)
+void DX11RenderTarget::_getColors(ID3D11RenderTargetView **arrayOut, uint &targetsNum)
 {
 	uint targets = 0;
 	for (int i = 0; i < 8; i++)
@@ -1251,7 +1251,7 @@ void DX11RenderTarget::_get_colors(ID3D11RenderTargetView **arrayOut, uint &targ
 	targetsNum = targets;
 }
 
-void DX11RenderTarget::_get_depth(ID3D11DepthStencilView **depthOut)
+void DX11RenderTarget::_getDepth(ID3D11DepthStencilView **depthOut)
 {
 	ITexture *dtex = _depth.Get();
 	ICoreTexture *dcoreTex;
@@ -1268,11 +1268,11 @@ void DX11RenderTarget::bind(ID3D11DeviceContext *ctx, ID3D11DepthStencilView *st
 {
 	ID3D11RenderTargetView *renderTargetViews[8];
 	UINT targets;
-	_get_colors(renderTargetViews, targets);
+	_getColors(renderTargetViews, targets);
 
 	ID3D11DepthStencilView *depthStencilView = nullptr;
 	if (_depth)
-		_get_depth(&depthStencilView);
+		_getDepth(&depthStencilView);
 
 	ctx->OMSetRenderTargets(targets, renderTargetViews, depthStencilView);
 }
@@ -1281,7 +1281,7 @@ void DX11RenderTarget::clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT depth
 {
 	ID3D11RenderTargetView *renderTargetViews[8];
 	UINT targets;
-	_get_colors(renderTargetViews, targets);
+	_getColors(renderTargetViews, targets);
 
 	for (UINT i = 0; i < targets; i++)
 	{
@@ -1291,7 +1291,7 @@ void DX11RenderTarget::clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT depth
 	ID3D11DepthStencilView *depthStencilView = nullptr;
 	if (_depth)
 	{
-		_get_depth(&depthStencilView);
+		_getDepth(&depthStencilView);
 		ctx->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, depth, stencil);
 	}
 }

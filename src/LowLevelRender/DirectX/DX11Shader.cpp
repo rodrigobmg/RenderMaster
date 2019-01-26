@@ -183,7 +183,7 @@ void DX11Shader::bind()
 			for (size_t i = 0; i < IDX_VEC.size(); i++) \
 			{ \
 				ConstantBuffer& cb = ConstantBufferPool[IDX_VEC[i]]; \
-				pointers[i] = cb.dxBuffer.Get(); \
+				pointers[i] = cb.buffer.Get(); \
 			} \
 			ctx->PREFIX##SetConstantBuffers(0, (uint)IDX_VEC.size(), pointers); \
 		}
@@ -255,11 +255,11 @@ API DX11Shader::FlushParameters()
 			if (cb.needFlush)
 			{
 				D3D11_MAPPED_SUBRESOURCE mappedResource{};
-				ctx->Map(cb.dxBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+				ctx->Map(cb.buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
 				memcpy(mappedResource.pData, cb.data.get(), cb.bytes);
 
-				ctx->Unmap(cb.dxBuffer.Get(), 0);
+				ctx->Unmap(cb.buffer.Get(), 0);
 
 				cb.needFlush = false;
 			}
