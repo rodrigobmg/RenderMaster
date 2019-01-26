@@ -22,7 +22,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 				resMan->LoadModel(&m, "box.fbx");
 				ModelPtr model2(m);
-
 				model2->SetPosition(&vec3{ 11.0f, 0.0f, 0.0f });
 
 				pCore->Start(); // Begin main loop
