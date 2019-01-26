@@ -32,6 +32,11 @@ class Core : public ICore
 	vector<IInitCallback *> _initCallbacks;
 	vector<std::function<void()>> _updateCallbacks;
 
+	vector<IProfilerCallback*> _profilerRecords;
+	std::map<size_t, IProfilerCallback*> _idxToRecordFn;
+	std::map<size_t, uint> _idxToLocalRecordIdx;
+	size_t _records;
+
 	long _lRef{0};
 
 	std::chrono::steady_clock::time_point start;
@@ -48,6 +53,7 @@ class Core : public ICore
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	void _set_window_caption(int is_paused, int fps);
+	void _recreateProfilerRecordsMap();
 
 public:
 
@@ -67,7 +73,15 @@ public:
 	}
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
 
-	void AddUpdateCallback(std::function<void()>&& calback) { _updateCallbacks.push_back(std::forward<std::function<void()>>(calback)); }
+	void AddUpdateCallback(std::function<void()>&& fn)
+	{
+		_updateCallbacks.push_back(std::forward<std::function<void()>>(fn));
+	}
+
+	void AddProfilerCallback(IProfilerCallback *fn);
+	void RemoveProfilerCallback(IProfilerCallback *fn);
+	size_t ProfilerRecords();
+	string GetProfilerRecord(size_t i);
 
 	float deltaTime() const	{ return _dt; }
 	int FPS() const			{ return _fps; }

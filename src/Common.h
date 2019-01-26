@@ -26,6 +26,13 @@ inline void ThrowIfFailed(HRESULT hr)
 }
 #endif
 
+class IProfilerCallback
+{
+public:
+	virtual uint getNumLines() = 0;
+	virtual string getString(uint i) = 0;
+};
+
 /////////////////////
 // Events
 /////////////////////

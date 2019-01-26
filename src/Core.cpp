@@ -264,6 +264,26 @@ void Core::_set_window_caption(int is_paused, int fps)
 	_pMainWindow->SetCaption(title.c_str());
 }
 
+void Core::_recreateProfilerRecordsMap()
+{
+	_idxToLocalRecordIdx.clear();
+	_idxToRecordFn.clear();
+
+	size_t idx = 0u;
+	for (auto &fn : _profilerRecords)
+	{
+		uint fnLines = fn->getNumLines();
+		for (size_t i = 0; i < fnLines; i++)
+		{
+			_idxToLocalRecordIdx[idx] = i;
+			_idxToRecordFn[idx] = fn;
+			idx++;
+		}
+	}
+
+	_records = idx;
+}
+
 API Core::GetDataDir(OUT const char **pStr)
 {
 	*pStr = _pDataDir.c_str();
@@ -285,6 +305,29 @@ API Core::GetInstalledDir(OUT const char **pStr)
 void Core::Log(const char *pStr, LOG_TYPE type)
 {
 	_pConsoleWindow->Log(pStr, type);
+}
+
+void Core::AddProfilerCallback(IProfilerCallback * fn)
+{
+	_profilerRecords.push_back(fn);
+	_recreateProfilerRecordsMap();
+}
+
+void Core::RemoveProfilerCallback(IProfilerCallback * fn)
+{
+	_profilerRecords.erase(std::remove(_profilerRecords.begin(), _profilerRecords.end(), fn),
+		_profilerRecords.end());
+	_recreateProfilerRecordsMap();
+}
+
+size_t Core::ProfilerRecords() { return _records; }
+
+string Core::GetProfilerRecord(size_t i)
+{
+	assert(i < _records);
+	IProfilerCallback *fn = _idxToRecordFn[i];
+	uint id = _idxToLocalRecordIdx[i];
+	return fn->getString(id);
 }
 
 API Core::AddInitCallback(IInitCallback* pCallback)

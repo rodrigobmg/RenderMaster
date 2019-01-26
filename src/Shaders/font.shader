@@ -43,14 +43,15 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	const float tex_size = 512.0f;
 	
 	float w = buffer[INSTANCE].data.x;
-	float h = buffer[INSTANCE].data.y;
+	float offset = buffer[INSTANCE].data.y;
+	float offsetVert = buffer[INSTANCE].data.z;
 
 	vec2 vtx = IN_ATTRIBUTE(PositionIn).xy * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
 
 	vec2 ndc = 
 		vec2(-1, 1) +
 		vec2(invWidth2 * left_padding, -invHeight2 * top_padding) +
-		vec2(invWidth2 * h, 0.0f) + 
+		vec2(invWidth2 * offset, invHeight2 * offsetVert) + 
 		vec2(invWidth2 * w, invHeight2 * hh) * vtx;
 	
 	OUT_POSITION = vec4(ndc, 0.0f, 1.0f);
@@ -81,12 +82,12 @@ float luma(vec3 col)
 }
 
 #ifdef ENG_INPUT_TEXCOORD
-	TEXTURE2D_IN(0, TEX_ALBEDO)
+	TEXTURE2D_IN(1, TEX_ALBEDO)
 #endif
 
 MAIN_FRAG(VS_OUTPUT)
 
-	vec3 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord)).rgb;
+	vec3 tex = TEXTURE(1, GET_ATRRIBUTE(TexCoord)).rgb;
 
 	OUT_COLOR = vec4(vec3(1, 1, 1) * tex, luma(tex));
 	//OUT_COLOR = vec4(1,1,0,1);

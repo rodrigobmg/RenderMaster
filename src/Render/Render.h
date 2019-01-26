@@ -22,12 +22,12 @@ struct RenderBuffers
 // Hight-lever render
 // Based on CoreRender (GLCoreRender or DX11CoreRender)
 //
-class Render : public IRender
+class Render : public IRender, public IProfilerCallback
 {
-	ICoreRender *_pCoreRender{nullptr};
-	IResourceManager *_pResMan{nullptr};
-	ISceneManager *_pSceneMan{nullptr};
-	IFileSystem *_fsystem{nullptr};
+	ICoreRender *_pCoreRender{ nullptr };
+	IResourceManager *_pResMan{ nullptr };
+	ISceneManager *_pSceneMan{ nullptr };
+	IFileSystem *_fsystem{ nullptr };
 
 	WRL::ComPtr<ITextFile> _forwardShader;
 	WRL::ComPtr<ITextFile> _postShader;
@@ -39,7 +39,6 @@ class Render : public IRender
 	TexturePtr whiteTexture;
 
 	TexturePtr fontTexture;
-	StructuredBufferPtr fontBuffer;
 
 	struct TexturePoolable
 	{
@@ -53,11 +52,11 @@ class Render : public IRender
 	vector<TexturePoolable> _texture_pool;
 
 	std::unordered_map<ShaderRequirement, ShaderPtr, ShaderRequirement> _shaders_pool;
-	
+
 	struct RenderMesh
 	{
 		uint model_id;
-		IMesh *mesh{nullptr};
+		IMesh *mesh{ nullptr };
 		mat4 modelMat;
 	};
 
@@ -72,12 +71,22 @@ class Render : public IRender
 		uint32_t id;
 		uint32_t __align[3];
 	};
-	string txt;
-	size_t txtHash;
-	unique_ptr<charr[]> txtData;
-	size_t bufferCharacters{};
+
+	struct RenderProfileRecord
+	{
+		string txt;
+		size_t txtHash;
+		unique_ptr<charr[]> txtData;
+		size_t bufferCharacters{};
+		StructuredBufferPtr fontBuffer;
+	};
+
+	vector < RenderProfileRecord> _records;
 
 	API shaders_reload(const char **args, uint argsNumber);
+
+	uint getNumLines() override;
+	string getString(uint i) override;
 
 	void renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes);
 	void renderEnginePost(RenderBuffers& buffers);
