@@ -29,13 +29,13 @@ class Core : public ICore
 
 	CRITICAL_SECTION _cs{};
 
-	vector<IInitCallback *> _initCallbacks;
+	vector<IInitCallback*> _initCallbacks;
 	vector<std::function<void()>> _updateCallbacks;
 
-	vector<IProfilerCallback*> _profilerRecords;
-	std::map<size_t, IProfilerCallback*> _idxToRecordFn;
-	std::map<size_t, uint> _idxToLocalRecordIdx;
-	size_t _records;
+	vector<IProfilerCallback*> _profilerCallbacks;
+	size_t _records{0};
+	std::map<size_t, IProfilerCallback*> _toToRecordFnMap;
+	std::map<size_t, uint> _toLocalRecordIdxMap;
 
 	long _lRef{0};
 

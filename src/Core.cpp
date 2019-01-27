@@ -195,7 +195,7 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 	case WINDOW_MESSAGE::SIZE:
 		if (_pCoreRender)
 			_pCoreRender->SetViewport(param1, param2);
-		//LogFormatted("Window size changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
+		//LogFormatted("Window length changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_UNMINIMIZED:
@@ -266,17 +266,17 @@ void Core::_set_window_caption(int is_paused, int fps)
 
 void Core::_recreateProfilerRecordsMap()
 {
-	_idxToLocalRecordIdx.clear();
-	_idxToRecordFn.clear();
+	_toLocalRecordIdxMap.clear();
+	_toToRecordFnMap.clear();
 
 	size_t idx = 0u;
-	for (auto &fn : _profilerRecords)
+	for (auto &fn : _profilerCallbacks)
 	{
 		uint fnLines = fn->getNumLines();
-		for (size_t i = 0; i < fnLines; i++)
+		for (uint i = 0; i < fnLines; i++)
 		{
-			_idxToLocalRecordIdx[idx] = i;
-			_idxToRecordFn[idx] = fn;
+			_toLocalRecordIdxMap[idx] = i;
+			_toToRecordFnMap[idx] = fn;
 			idx++;
 		}
 	}
@@ -309,14 +309,14 @@ void Core::Log(const char *pStr, LOG_TYPE type)
 
 void Core::AddProfilerCallback(IProfilerCallback * fn)
 {
-	_profilerRecords.push_back(fn);
+	_profilerCallbacks.push_back(fn);
 	_recreateProfilerRecordsMap();
 }
 
 void Core::RemoveProfilerCallback(IProfilerCallback * fn)
 {
-	_profilerRecords.erase(std::remove(_profilerRecords.begin(), _profilerRecords.end(), fn),
-		_profilerRecords.end());
+	_profilerCallbacks.erase(std::remove(_profilerCallbacks.begin(), _profilerCallbacks.end(), fn),
+		_profilerCallbacks.end());
 	_recreateProfilerRecordsMap();
 }
 
@@ -325,8 +325,8 @@ size_t Core::ProfilerRecords() { return _records; }
 string Core::GetProfilerRecord(size_t i)
 {
 	assert(i < _records);
-	IProfilerCallback *fn = _idxToRecordFn[i];
-	uint id = _idxToLocalRecordIdx[i];
+	IProfilerCallback *fn = _toToRecordFnMap[i];
+	uint id = _toLocalRecordIdxMap[i];
 	return fn->getString(id);
 }
 
@@ -500,7 +500,7 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 
 		DWORD buffer_size = 0;
 
-		RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), key, RRF_RT_REG_SZ, 0, nullptr, // pvData == nullptr ? Request buffer size
+		RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), key, RRF_RT_REG_SZ, 0, nullptr, // pvData == nullptr ? Request buffer length
 			&buffer_size);
 
 		const DWORD buffer_length = buffer_size / sizeof(WCHAR); // length in WCHAR's

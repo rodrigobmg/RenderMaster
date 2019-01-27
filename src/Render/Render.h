@@ -64,7 +64,7 @@ class Render : public IRender, IProfilerCallback
 	mat4 ViewMat;
 	mat4 ViewProjMat;
 
-	// Font
+	// One Profiler character
 	struct charr
 	{
 		float data[4];
@@ -72,16 +72,16 @@ class Render : public IRender, IProfilerCallback
 		uint32_t __align[3];
 	};
 
+	// One profiler line
 	struct RenderProfileRecord
 	{
-		string txt;
-		size_t txtHash;
-		unique_ptr<charr[]> txtData;
-		size_t bufferCharacters{};
-		StructuredBufferPtr fontBuffer;
+		size_t txtHash{};
+		size_t length{};
+		unique_ptr<charr[]> bufferData;
+		StructuredBufferPtr buffer;
 	};
 
-	vector < RenderProfileRecord> _records;
+	vector<RenderProfileRecord> _records;
 
 	API shaders_reload(const char **args, uint argsNumber);
 

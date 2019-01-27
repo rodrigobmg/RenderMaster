@@ -7,7 +7,7 @@ struct UBO final
 	size_t bytes = 0u;
 	bool needFlush = true;
 	GLuint ID = 0u;
-	std::unique_ptr<uint8[]> data;
+	unique_ptr<uint8[]> data;
 
 	struct Parameter
 	{
@@ -24,7 +24,7 @@ public:
 		ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
-		memset(data.get(), '\0', bytesIn);
+		memset(data.get(), 0, bytesIn);
 	}
 
 	UBO(const UBO& r) = delete;

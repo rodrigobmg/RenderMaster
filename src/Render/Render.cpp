@@ -305,7 +305,7 @@ string Render::getString(uint i)
 		case 0: return "==== Render ====";
 		case 1: return "FPS: " + std::to_string(_pCore->FPSlazy());
 		case 2: return "Runtime Shaders: " + std::to_string(_shaders_pool.size());
-		case 3: return "Texture pool:" + std::to_string(_texture_pool.size());
+		case 3: return "Texture pool: " + std::to_string(_texture_pool.size());
 		case 4: return "";
 	}
 	assert(false);
@@ -495,25 +495,25 @@ API Render::RenderPassGUI()
 
 		if (fps.size() > 0)
 		{
-			if (!r.fontBuffer || r.bufferCharacters < fps.size())
+			if (!r.buffer || r.length < fps.size())
 			{
-				r.bufferCharacters = fps.size();
+				r.length = fps.size();
 
 				IStructuredBuffer *sb;
-				_pResMan->CreateStructuredBuffer(&sb, r.bufferCharacters * sizeof(charr), sizeof(charr));
-				r.fontBuffer = StructuredBufferPtr(sb);
+				_pResMan->CreateStructuredBuffer(&sb, r.length * sizeof(charr), sizeof(charr));
+				r.buffer = StructuredBufferPtr(sb);
 
-				r.txtData = unique_ptr<charr[]>(new charr[r.bufferCharacters]);
+				r.bufferData = unique_ptr<charr[]>(new charr[r.length]);
 			}
 
 			float offset = 0.0f;
 			for (size_t i = 0u; i < fps.size(); i++)
 			{
 				float w = static_cast<float>(widths[fps[i]]);
-				r.txtData[i].data[0] = w;
-				r.txtData[i].data[1] = offset;
-				r.txtData[i].data[2] = offsetVert;
-				r.txtData[i].id = static_cast<uint>(fps[i]);
+				r.bufferData[i].data[0] = w;
+				r.bufferData[i].data[1] = offset;
+				r.bufferData[i].data[2] = offsetVert;
+				r.bufferData[i].id = static_cast<uint>(fps[i]);
 				offset += w;
 			}
 
@@ -522,10 +522,10 @@ API Render::RenderPassGUI()
 			if (newHash != r.txtHash)
 			{
 				r.txtHash = newHash;
-				r.fontBuffer->SetData(reinterpret_cast<uint8*>(&r.txtData[0].data[0]), fps.size() * sizeof(charr));
+				r.buffer->SetData(reinterpret_cast<uint8*>(&r.bufferData[0].data[0]), fps.size() * sizeof(charr));
 			}
 
-			_pCoreRender->SetStructuredBufer(1, r.fontBuffer.Get());
+			_pCoreRender->SetStructuredBufer(1, r.buffer.Get());
 
 			_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
 		}
@@ -553,8 +553,8 @@ void Render::_update()
 	}),
     _texture_pool.end());
 
-	//if (before != _texture_pool.size())
-	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.size());
+	//if (before != _texture_pool.length())
+	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.length());
 }
 
 IShader* Render::getShader(const ShaderRequirement &req)
@@ -875,7 +875,7 @@ void Render::Init()
 void Render::Free()
 {
 	for (auto &r : _records)
-		r.fontBuffer.Reset();
+		r.buffer.Reset();
 
 	fontTexture.Reset();
 	whiteTexture.Reset();

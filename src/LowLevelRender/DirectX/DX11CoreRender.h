@@ -25,7 +25,7 @@ public:
 		buffer(dxBufferIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
-		memset(data.get(), '\0', bytesIn);
+		memset(data.get(), 0, bytesIn);
 	}
 	ConstantBuffer(const ConstantBuffer& r) = delete;
 	ConstantBuffer(ConstantBuffer&& r)
