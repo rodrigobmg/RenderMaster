@@ -5,6 +5,7 @@
 #include "GLShader.h"
 #include "GLMesh.h"
 #include "GLTexture.h"
+#include "GLSSBO.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -637,7 +638,16 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 
 API GLCoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize)
 {
-	*pStructuredBuffer = nullptr;
+	assert(size % 16 == 0);
+
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, size * elementSize, nullptr, GL_DYNAMIC_COPY);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	*pStructuredBuffer = new GLSSBO(buffer, size, elementSize);
+
 	return S_OK;
 }
 
@@ -834,6 +844,15 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 
 API GLCoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
 {
+	if (buffer)
+	{
+		ICoreStructuredBuffer *coreBuffer;
+		buffer->GetCoreBuffer(&coreBuffer);
+		GLSSBO *glBuffer = static_cast<GLSSBO*>(coreBuffer);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, glBuffer->ID());
+	} else
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, 0);
+
 	return S_OK;
 }
 
@@ -901,11 +920,27 @@ API GLCoreRender::Draw(IMesh *mesh, uint instances)
 
 	GLMesh *glMesh = getGLMesh(mesh);
 
+	GLenum mode = (topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES;
+
+	GLsizei count;
 	if (glMesh->Indexes())
-		glDrawElements((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, glMesh->Indexes(), ((glMesh->Indexes() > 65535) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT), nullptr);
+		count = (glMesh->Indexes() > 65535) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+
+	if (instances > 1)
+	{
+		if (glMesh->Indexes())
+			glDrawElementsInstanced(mode, glMesh->Indexes(), count, nullptr, instances);
+		else
+			glDrawArraysInstanced(mode, 0, vertecies, instances);
+	}
 	else
-		glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);	
-	
+	{
+		if (glMesh->Indexes())
+			glDrawElements(mode, glMesh->Indexes(), count, nullptr);
+		else
+			glDrawArrays(mode, 0, vertecies);
+	}
+
 	CHECK_GL_ERRORS();
 	
 	return S_OK;

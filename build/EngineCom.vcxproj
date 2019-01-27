@@ -25,6 +25,7 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\ConsoleWindow.h" />
     <ClInclude Include="..\src\Core.h" />
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLSSBO.h" />
     <ClInclude Include="..\src\Render\Objects\StructuredBuffer.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Mesh.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\ConsoleWindow.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
+    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLSSBO.cpp" />
     <ClCompile Include="..\src\Render\Objects\StructuredBuffer.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Mesh.cpp" />

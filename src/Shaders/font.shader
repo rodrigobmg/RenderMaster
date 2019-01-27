@@ -25,13 +25,13 @@ UNIFORM_BUFFER_BEGIN(viewport_parameters)
 	UNIFORM(float, invHeight2)
 UNIFORM_BUFFER_END
 
-STRUCT(Char)
+struct Char {
 	vec4 data;
 	uint id;
-	uint __align[3];
-	END_STRUCT
+	uint dummy__[3];
+};
 
-STRUCTURED_BUFFER_IN(1, buffer, Char)
+STRUCTURED_BUFFER_IN(1, character_buffer, Char)
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
@@ -42,9 +42,9 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 	const uint chars_in_row = 16u;
 	const float tex_size = 512.0f;
 	
-	float w = buffer[INSTANCE].data.x;
-	float offset = buffer[INSTANCE].data.y;
-	float offsetVert = buffer[INSTANCE].data.z;
+	float w = character_buffer[INSTANCE].data.x;
+	float offset = character_buffer[INSTANCE].data.y;
+	float offsetVert = character_buffer[INSTANCE].data.z;
 
 	vec2 vtx = IN_ATTRIBUTE(PositionIn).xy * 0.5f + vec2(0.5f, 0.5f); // [-1, 1] -> [0, 1]
 
@@ -58,7 +58,7 @@ MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
 	vtx.y = 1.0f - vtx.y;
 
-	uint id = buffer[INSTANCE].id - 32;
+	uint id = character_buffer[INSTANCE].id - 32;
 	float uv_x = float(id % chars_in_row) * ww;
 	float uv_y = float(id / chars_in_row) * hh;
 

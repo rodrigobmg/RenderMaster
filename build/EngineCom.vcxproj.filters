@@ -98,6 +98,9 @@
     <ClInclude Include="..\src\Render\Objects\StructuredBuffer.h">
       <Filter>Render\Obects</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLSSBO.h">
+      <Filter>LowLevelRender\OpenGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -170,6 +173,9 @@
     </ClCompile>
     <ClCompile Include="..\src\Render\Objects\StructuredBuffer.cpp">
       <Filter>Render\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLSSBO.cpp">
+      <Filter>LowLevelRender\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
